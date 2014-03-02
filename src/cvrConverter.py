@@ -4,7 +4,8 @@ import logging
 
 filename = "C:/Users/Gregory/Desktop/reverse it/ACP00.cvr"
 
-logging.basicConfig(filename='Conversion_log.log', filemode='w', level=logging.DEBUG)
+logging.basicConfig(filename='Conversion_log.log', filemode='w', level=logging.INFO)
+
 
 def bytetobinary(byte):
 	#Returns a string of length 8 of the byte of data fed to it.
@@ -28,13 +29,14 @@ def findnextcodepos(start_pos, filetype, lookupcode):
 	
 	# filetype is a bytearray
 	# start_pos is the position the user wants to start at.
-
-	return filetype.find(bytearray((lookupcode[0],lookupcode[1],lookupcode[2],lookupcode[3])),start_pos)+4
+	answer = filetype.index(bytearray((lookupcode[0],lookupcode[1],lookupcode[2],lookupcode[3])),start_pos)+4
+	logging.debug("Found " + str(lookupcode)+ " returning position: " + str(answer))
+	return answer
 	
 	
 	
 	
-## This could be completly wrong.  YAY!	
+## This could be completely wrong.  YAY!	
 ## Below is the lookup chart for knowing what value means which directions.	
 """
 	   Y
@@ -107,40 +109,40 @@ with open(filename[:-4]+".txt","w") as output:
 		logging.warning("Number of bytes in file (" + str(len(filetype)) + ") does not equals the number of bytes the file thinks it has!"+str(intNumberofbytes))
 	
 	
-	findnextcodepos(0,filetype,[0x00,0x00,0x00,0x02])
+	pos = findnextcodepos(pos,filetype,[0x00,0x00,0x00,0x02])
 	
 	# Ok first we need to get the length of the object name
-	dist = filetype[24]-8
+	dist = struct.unpack("I", filetype[pos:pos + 4])[0]-8
+	logging.debug(dist)
 	s = str(dist)+"s"  # Then create a filter for unpacking based on it
-	pos = 28
+	
+	pos = pos + 4
 	
 	FileNameitwasconvertedFrom = struct.unpack(s, filetype[pos:pos + dist])[0].decode(encoding='UTF-8')
 	output.write(FileNameitwasconvertedFrom)
 	output.write("\n")
 	logging.info(FileNameitwasconvertedFrom)
 
-	#TODO Id marker 00 00 00 03  I need to get rid of this.
-	pos = pos + dist + 3
+
+	pos = findnextcodepos(pos,filetype,[0x00,0x00,0x00,0x03])
 	
-	# moving on....
-	pos+=1
 	# Where is the 3d data stored in this file?
 	threedlocation = struct.unpack("I", filetype[pos:pos+4])[0] + pos - 1
 	logging.debug("3d data is at:" + str(threedlocation))
 	
 	
-	pos+=8 # TODO replace with ID finder.
-	
-	dist = filetype[pos]-8 # length of palate name.
+	# Find the palette name length.
+	pos = findnextcodepos(pos,filetype,[0x00,0x00,0x01,0x01])
+	dist = filetype[pos]-8 # length of palette name.
 	s = str(dist)+"s"
 	pos += 4
 	
-	PalateName = struct.unpack(s, filetype[pos:pos + dist])[0].decode(encoding='UTF-8')
-	output.write(PalateName)
+	PaletteName = struct.unpack(s, filetype[pos:pos + dist])[0].decode(encoding='UTF-8')
+	output.write(PaletteName)
 	output.write("\n")
-	logging.info(PalateName)
+	logging.info(PaletteName)
 
-	# Palatte colors
+	# Palette colors
 	pos+=16
 	logging.debug("pallet nums" + str(filetype[pos]))
 	pos=pos + 1 + 10*3  #10 was the right number for ACP which had 145 for its number. 155-145 = 10
@@ -152,6 +154,8 @@ with open(filename[:-4]+".txt","w") as output:
 		colorcount+=1
 		pos+=3
 	
+	
+	# Then there is a bunch of stuff I don't know what it does.... O.o
 	
 	
 	# -----------------------------------------------------------------
@@ -169,22 +173,13 @@ with open(filename[:-4]+".txt","w") as output:
 	#No clue about the number in between here means
 	#skip for now
 	
-	# TODO replace with marker finder.
-	pos+=8
-	if filetype[pos] == 4:
-		print("Ok, we're at the right location.")
-		print(filetype[pos])
-	else:
-		#terminate?
-		raise Exception("Not at the right location!")
-	
-	#ok read how long this name is
-	pos+=1
-	intNameLength = filetype[pos]-8  #yeah... not sure if this is supposed to be a 1 byte descriptor or an int, there are allot of zeros after it
-	
+
+	# Name length....
+	pos = findnextcodepos(pos,filetype,[0x00,0x00,0x01,0x04])
+	intNameLength = struct.unpack("I", filetype[pos:pos + 4])[0]-8
 	
 	pos+=4
-	#And now grab the name....
+	# And name
 	s = str(intNameLength)+"s"
 	AnotherName = struct.unpack(s, filetype[pos:pos + intNameLength])[0].decode(encoding='UTF-8')
 	logging.info(AnotherName)
@@ -194,23 +189,22 @@ with open(filename[:-4]+".txt","w") as output:
 	pos+=intNameLength
 	
 	
-	
+	pos = findnextcodepos(pos,filetype,[0x00,0x02,0x04,0x0C])
 	## 00 02 04 0C 00 00 00 nn nn ?? ?? <- nn nn ?? ?? is the number of parts in this object	
-	int_numberofparts = struct.unpack("I", filetype[pos+8:pos + 12])[0]
+	int_numberofparts = struct.unpack("I", filetype[pos+3:pos + 7])[0]
 	logging.info("Number of parts is " + str(int_numberofparts))
 	
 	
 	## 00 03 04 0C 00 00 00 nn nn nn nn 	< nn of frames?
 	
-	
-	int_number_of_frames = struct.unpack("I", filetype[pos+20:pos + 24])[0]
+	pos = findnextcodepos(pos,filetype,[0x00,0x03,0x04,0x0C])
+	int_number_of_frames = struct.unpack("I", filetype[pos+3:pos + 7])[0]
 	logging.info("Number of frames is " + str(int_number_of_frames))
 
 	
-	# TODO fix this for the love of god.
 	# lets get the current part's name
-	pos+=32
-	pos+=4
+	#00 01 04 04	
+	pos = findnextcodepos(pos,filetype,[0x00,0x01,0x04,0x04])
 	partnameLength = filetype[pos]-8	
 	logging.debug("Part name length: " + str(partnameLength))  # for srb the value should be 3
 	s = str(partnameLength)+"s"
@@ -221,57 +215,61 @@ with open(filename[:-4]+".txt","w") as output:
 	output.write("\n")
 	pos+=partnameLength
 	
-	# Grab the next parts location
-	# TODO replace with finder code.
-	## I should probably make this throw an error if it isn't correct.
-	print("these threee.  Should be equal to 244")
-	print(str(filetype[pos+1]) + str(filetype[pos+2])+ str(filetype[pos+3]))
 	
-	nextpart = struct.unpack("I", filetype[pos+4:pos+4+4])[0]+pos
+	
+	# Grab the next parts location!   This will fail curently!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	# TODO, place into a try catch statement as it will fail for some files.
+	## I should probably make this throw an error if it isn't correct.	
+	pos = findnextcodepos(pos,filetype,[0x00,0x02,0x04,0x04])
+	nextpart = struct.unpack("I", filetype[pos:pos+4])[0]+pos
 	logging.info("Location of next part is " + str(nextpart))
+	
 	
 	
 	## There is another distance code here.... not sure why  Not bothering to read it in right now
 	
+	
+	pos = findnextcodepos(pos,filetype,[0x01,0x02,0x04,0x04])
+	
 	## TODO use id code movement stuff.
 	## Does some scalling here.  As far as I can tell.  It will only use one of these.
-	int_scale_z = filetype[pos+37]
-	int_scale_x = filetype[pos+39]
-	int_scale_y = filetype[pos+41]
+	int_scale_z = filetype[pos+1+24]
+	int_scale_x = filetype[pos+3+24]
+	int_scale_y = filetype[pos+5+24]
 
 	# Since the code currently does nothing with these, and the potential of this being important, lets throw a warning if they
 	# Don't equal 0
 	if(int_scale_z + int_scale_x + int_scale_y != 0):
 		logging.warning("Scales z:" + str(int_scale_z) + "  Scales x:" + str(int_scale_x) + "  Scales y:"+ str(int_scale_y))
 		logging.warning("Non-zero scaling factor on file!")
+	else:
+		logging.debug("Scales z:" + str(int_scale_z) + "  Scales x:" + str(int_scale_x) + "  Scales y:"+ str(int_scale_y))
 	
 	# I'm not sure what these are for.  It affected the view of the object.  Might be length of the stuff.
 	# Length?  Perhaps?  Need to see if they match up with anything.
-	int_view_z = filetype[pos+36]
-	int_view_x = filetype[pos+38]
-	int_view_y = filetype[pos+40]
+	int_view_z = filetype[pos+24]
+	int_view_x = filetype[pos+2+24]
+	int_view_y = filetype[pos+4+24]
 	logging.info("What? z:" + str(int_view_z) + "  x:" + str(int_view_x) + "  y:"+ str(int_view_y))
 
 	
 	## Positional data!  
-	z0 = struct.unpack("h", filetype[pos+42:pos+44])[0]
-	x0 = struct.unpack("h", filetype[pos+44:pos+46])[0]
-	y0 = struct.unpack("h", filetype[pos+46:pos+48])[0]
+	z0 = struct.unpack("h", filetype[pos+30:pos+32])[0]
+	x0 = struct.unpack("h", filetype[pos+32:pos+34])[0]
+	y0 = struct.unpack("h", filetype[pos+34:pos+36])[0]
 	logging.debug("Position 0 Z: " + str(z0) + "  x:" + str(x0) + "  y:"+ str(y0))
 	
 	
 	## and then we have the rotation point data of the object	
-	zr = struct.unpack("h", filetype[pos+48:pos+50])[0]
-	xr = struct.unpack("h", filetype[pos+50:pos+52])[0]
-	yr = struct.unpack("h", filetype[pos+52:pos+54])[0]
+	zr = struct.unpack("h", filetype[pos+36:pos+38])[0]
+	xr = struct.unpack("h", filetype[pos+38:pos+40])[0]
+	yr = struct.unpack("h", filetype[pos+40:pos+42])[0]
 	logging.info("Rotation Point or Offset? Info Z: " + str(zr) + "  x:" + str(xr) + "  y:"+ str(yr))
 	
-	#TODO replace this
-	pos+=54
+	
+	pos+=42
 	# Total Number of voxels
 	int_totalvox =  struct.unpack("I", filetype[pos:pos+4])[0]
-	
-	
 	logging.info("Total Voxels count " + str(int_totalvox))
 	output.write(str(int_totalvox)+"\n")
 	

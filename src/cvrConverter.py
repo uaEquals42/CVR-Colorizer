@@ -19,15 +19,22 @@ def bytetobinary(byte):
 def hextodec(s):
 	return int(s, 16)
 	
-def findnextcodepos(pos, filetype, lookupcode):
+def findnextcodepos(start_pos, filetype, lookupcode):
 	#ok, lets do things properly for this
-	#the lookupcode should be 8characterslong to represent the 4 hex values we want
-	# will return -1 if code is not found further on in file.  Otherwise will return the position of the 
-	if(len(lookupcode)!=8):
+	#the lookupcode should be  4 hex values.  Example [0x00,0x00,0x00,0x02]
+	# will return -1 if code is not found further on in file.  
+	if(len(lookupcode)!=4):
 		raise Exception("Improper lookupcode length")
 	
+	# filetype is a bytearray
+	# start_pos is the position the user wants to start at.
+
+	return filetype.find(bytearray((lookupcode[0],lookupcode[1],lookupcode[2],lookupcode[3])),start_pos)+4
 	
-## THis could be completly wrong.  YAY!	
+	
+	
+	
+## This could be completly wrong.  YAY!	
 ## Below is the lookup chart for knowing what value means which directions.	
 """
 	   Y
@@ -100,7 +107,7 @@ with open(filename[:-4]+".txt","w") as output:
 		logging.warning("Number of bytes in file (" + str(len(filetype)) + ") does not equals the number of bytes the file thinks it has!"+str(intNumberofbytes))
 	
 	
-	
+	findnextcodepos(0,filetype,[0x00,0x00,0x00,0x02])
 	
 	# Ok first we need to get the length of the object name
 	dist = filetype[24]-8

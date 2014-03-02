@@ -3,7 +3,7 @@ import struct
 import logging
 import time
 
-filename = "C:/Users/Gregory/Desktop/reverse it/ACP00.cvr"
+filename = "C:/Users/Gregory/Desktop/reverse it/AA-ROVER.cvr"
 
 logging.basicConfig(filename='Conversion_log.log', filemode='w', level=logging.INFO)
 
@@ -321,9 +321,13 @@ with open(filename[:-4]+".txt","w") as output:
 	
 	"""
 	
-	# Ok.  First thing first.  Is this a multipart mesh or not?
-	#Gonna do kindof a hack here.  Lets first analyze the voxel data for the 
-	#11010 marker if there 
+	# Ok.  First thing first.  Is this a multipart mesh or not?  I think it is never the case for multi-part objects, but I could be wrong....
+	# The problem is some meshes have it, others don't....
+	# The method I use below to figure it out probably isn't right, but hopefully it will work.
+	# The idea:  If it is a multimesh, this first one always? has 00 00 00 00 before the 3d data, 
+	# I check to see if there is 4 0x00 at that location, if there is, then it is a multimesh.   
+	bool_multimesh = filetype[pos+28]==0 and filetype[pos+29]==0 and filetype[pos+30]==0 and filetype[pos+31]==0
+	logging.info("MultiMesh?: " + str(bool_multimesh))
 	
 	
 	

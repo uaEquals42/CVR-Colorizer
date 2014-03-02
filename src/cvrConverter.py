@@ -1,6 +1,7 @@
 #import binascii
 import struct
 import logging
+import time
 
 filename = "C:/Users/Gregory/Desktop/reverse it/ACP00.cvr"
 
@@ -83,6 +84,7 @@ dict_directions['11010'] = [ 0, 0, 0]	## d0 ??????!!!!!  Noticed this appears on
 colors = {}
 
 
+start_time =  time.time()
 
 with open(filename,"rb") as f:
 	filetype = bytearray(f.read())
@@ -347,9 +349,10 @@ with open(filename[:-4]+".txt","w") as output:
 		output.write(str(array_pos[0]) + "," + str(array_pos[1]) + "," + str( array_pos[2]) +"," + colors[filetype[pos+2]]+"\n")  #bytetobinary(filetype[pos])[-3:] + "," + str(filetype[pos+1]) + "," 
 		pos+=3
 		int_tmpcount+=1
-		
-logging.info("Success")
-print("Success")
+
+time_taken = time.time() - start_time		
+logging.info("Finished, time taken " + str(time_taken))
+print("Finished, time taken " + str(time_taken))
 		
 
 	

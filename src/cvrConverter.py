@@ -2,9 +2,14 @@
 import struct
 import logging
 import time
+import math
 
-filename = "C:/Users/Gregory/Desktop/reverse it/AA-ROVER.cvr"
+filename = "C:/Users/Gregory/Desktop/reverse it/select.cvr"
+#filename = "C:/Users/Gregory/Desktop/reverse it/A.cvr"
 #filename = "C:/Users/Gregory/Desktop/reverse it/ACP00.cvr"
+#filename = "C:/Users/Gregory/Desktop/reverse it/Vwntu.cvr"
+#filename = "C:/Users/Gregory/Desktop/reverse it/Srb.cvr"
+#filename = "C:/Users/Gregory/Desktop/reverse it/VCUp.cvr"
 
 logging.basicConfig(filename='Conversion_log.log', filemode='w', level=logging.INFO)
 
@@ -166,8 +171,9 @@ with open(filename[:-4]+".txt","w") as output:
 
 	# Palette dict_colors
 	pos+=16
-	logger.debug("pallet nums" + str(filetype[pos]))
-	pos=pos + 1 + 10*3  #10 was the right number for ACP which had 145 for its number. 155-145 = 10
+	logger.debug("pallet nums" + str(filetype[pos-1]))
+	pos=pos + 1 + filetype[pos-1]*3  #10 was the right number for ACP which had 145 for its number. 155-145 = 10
+	# Color is wrong on select for the knob parts... as well as the drill arm
 	inttmp = pos + 3*255
 	colorcount = 0;
 	while pos <= inttmp:
@@ -209,6 +215,7 @@ with open(filename[:-4]+".txt","w") as output:
 	output.write("\n")
 	#increment the pos
 	pos+=intNameLength
+
 	
 	
 	pos = findnextcodepos(pos,filetype,[0x00,0x02,0x04,0x0C])
@@ -309,8 +316,9 @@ with open(filename[:-4]+".txt","w") as output:
 	bool_multimesh = filetype[pos+28]==0 and filetype[pos+29]==0 and filetype[pos+30]==0 and filetype[pos+31]==0
 	logger.info("MultiMesh?: " + str(bool_multimesh))
 	
+	
 	if(bool_multimesh):
-		
+		#TODO: make this code neater, remove duplication.  God this is ugly here.
 		z1 = struct.unpack("h", filetype[pos:pos+2])[0]
 		x1 = struct.unpack("h", filetype[pos+2:pos+4])[0]
 		y1 = struct.unpack("h", filetype[pos+4:pos+6])[0]
@@ -350,22 +358,30 @@ with open(filename[:-4]+".txt","w") as output:
 	
 	while int_tmpcount1 < int_totalvox:
 		print("looped")
+		
 		while int_tmpcount2 < vox_count_section:	
+			
 			#print(int_tmpcount)
 			#print(pos)
 			if('11010' == bytetobinary(filetype[pos])[0:5]):
 				logging.debug("Here it is again")  # didn't find any! on ACP00... but on ones that have multimesh conversions into a single part... its there
 				# ok, 
-			array_pos[0] = array_pos[0] + dict_directions[bytetobinary(filetype[pos])[0:5]][0]
-			array_pos[1] = array_pos[1] + dict_directions[bytetobinary(filetype[pos])[0:5]][1]
-			array_pos[2] = array_pos[2] + dict_directions[bytetobinary(filetype[pos])[0:5]][2]
-			
-			#print(dict_directions[bytetobinary(filetype[pos])[0:5]])
-			#print(array_pos)
-			#print(filetype[pos+2])
-			#print(str(dict_colors[filetype[pos+2]]))
-			#print(str(int_tmpcount) + ":" + str(vox_count_section))
-			output.write(str(array_pos[0]) + "," + str(array_pos[1]) + "," + str( array_pos[2]) +"," + dict_colors[filetype[pos+2]]+"\n")  #bytetobinary(filetype[pos])[-3:] + "," + str(filetype[pos+1]) + "," 
+			else:
+				
+				array_pos[0] = array_pos[0] + dict_directions[bytetobinary(filetype[pos])[0:5]][0]
+				array_pos[1] = array_pos[1] + dict_directions[bytetobinary(filetype[pos])[0:5]][1]
+				array_pos[2] = array_pos[2] + dict_directions[bytetobinary(filetype[pos])[0:5]][2]
+				
+				
+	
+				output.write(str(array_pos[0]) + "," + str(array_pos[1]) + "," + str( array_pos[2]) +"," + dict_colors[filetype[pos+2]])  #bytetobinary(filetype[pos])[-3:] + "," + str(filetype[pos+1]) + "," 
+				
+				# Really crappy normals
+				#logger.debug(array_pos)
+				tmparray = [abs(array_pos[0]),abs(array_pos[1]),abs(array_pos[2])]
+				output.write("," + str(array_pos[0]) + "," + str(array_pos[1]) + "," + str( array_pos[2]))
+				output.write("\n")
+				
 			pos+=3
 			int_tmpcount2+=1
 			int_tmpcount1+=1
@@ -401,8 +417,7 @@ with open(filename[:-4]+".txt","w") as output:
 
 time_taken = time.time() - start_time		
 logger.info("Finished, time taken " + str(time_taken))
-print("Finished, time taken " + str(time_taken))
-		
+print("Finished, time taken " + str(time_taken))	
 
 	
 	

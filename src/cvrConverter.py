@@ -2,12 +2,15 @@
 import struct
 import logging
 import time
-import math
+import webcolors
 
-filename = "C:/Users/Gregory/Desktop/reverse it/select.cvr"
+
+
+#filename = "C:/Users/Gregory/Desktop/reverse it/VWNAA.cvr" 
+#filename = "C:/Users/Gregory/Desktop/reverse it/select.cvr" # Colors are off
 #filename = "C:/Users/Gregory/Desktop/reverse it/A.cvr"
 #filename = "C:/Users/Gregory/Desktop/reverse it/ACP00.cvr"
-#filename = "C:/Users/Gregory/Desktop/reverse it/Vwntu.cvr"
+filename = "C:/Users/Gregory/Desktop/reverse it/Vwntu.cvr"
 #filename = "C:/Users/Gregory/Desktop/reverse it/Srb.cvr"
 #filename = "C:/Users/Gregory/Desktop/reverse it/VCUp.cvr"
 
@@ -36,8 +39,6 @@ def bytetobinary(byte):
 	stringxx = bin(byte)[2:]
 	while len(stringxx)<8:
 		stringxx = "0" + stringxx
-	
-	
 	return stringxx
 
 
@@ -58,7 +59,20 @@ def findnextcodepos(start_pos, filetype, lookupcode):
 	logger.debug("Found " + str(lookupcode)+ " returning position: " + str(answer))
 	return answer
 	
-	
+def colorname(color):
+	try:
+		colorname = webcolors.rgb_to_name(color)
+		return colorname
+	except:
+		colours = {}
+		for name, key in webcolors.css3_names_to_hex.items():
+			red, green, blue = webcolors.hex_to_rgb(key)
+			mred = abs(red - color[0]) 
+			mgeen = abs(green - color[1]) 
+			mblue = abs(blue - color[2]) 
+			colours[(mred + mgeen + mblue)] = name
+		return colours[min(colours.keys())]
+			
 	
 	
 ## This could be completely wrong.  YAY!	
@@ -174,11 +188,18 @@ with open(filename[:-4]+".txt","w") as output:
 	logger.debug("pallet nums" + str(filetype[pos-1]))
 	pos=pos + 1 + filetype[pos-1]*3  #10 was the right number for ACP which had 145 for its number. 155-145 = 10
 	# Color is wrong on select for the knob parts... as well as the drill arm
+	# It isn't getting the right colors when it is # 145 or higher
 	inttmp = pos + 3*255
 	colorcount = 0;
 	while pos <= inttmp:
-		#print(str(colorcount) +":" + str(filetype[pos]) + "," + str(filetype[pos+1]) +" ," + str(filetype[pos+2]))
-		dict_colors[colorcount] = str(filetype[pos]) + "," + str(filetype[pos+1]) +" ," + str(filetype[pos+2])
+		#print(str(colorcount) +":" + str(filetype[pos]) + "," + str(filetype[pos+1]) +"," + str(filetype[pos+2]))
+		dict_colors[colorcount] = str(filetype[pos]) + "," + str(filetype[pos+1]) +"," + str(filetype[pos+2])
+		#logger.info("Color " + str(colorcount)+ ": " + dict_colors[colorcount] + ": "  + colorname((filetype[pos], filetype[pos+1], filetype[pos+2])))
+		logger.debug("Color " + str(colorcount)+ ": " + dict_colors[colorcount] + ": "  + colorname((filetype[pos], filetype[pos+1], filetype[pos+2])))
+
+		if(colorcount==236):
+			dict_colors[colorcount] = str(170) + "," + str(170) +"," + str(160)
+		
 		colorcount+=1
 		pos+=3
 	
@@ -364,7 +385,7 @@ with open(filename[:-4]+".txt","w") as output:
 			#print(int_tmpcount)
 			#print(pos)
 			if('11010' == bytetobinary(filetype[pos])[0:5]):
-				logging.debug("Here it is again")  # didn't find any! on ACP00... but on ones that have multimesh conversions into a single part... its there
+				logging.info("Here it is again")  # didn't find any! on ACP00... but on ones that have multimesh conversions into a single part... its there
 				# ok, 
 			else:
 				
@@ -373,11 +394,13 @@ with open(filename[:-4]+".txt","w") as output:
 				array_pos[2] = array_pos[2] + dict_directions[bytetobinary(filetype[pos])[0:5]][2]
 				
 				
-	
+				
 				output.write(str(array_pos[0]) + "," + str(array_pos[1]) + "," + str( array_pos[2]) +"," + dict_colors[filetype[pos+2]])  #bytetobinary(filetype[pos])[-3:] + "," + str(filetype[pos+1]) + "," 
 				
 				# Really crappy normals
-				#logger.debug(array_pos)
+				if(filetype[pos+2]>235):
+					logger.debug(str(filetype[pos+2]) +":"+ dict_colors[filetype[pos+2]])
+				
 				tmparray = [abs(array_pos[0]),abs(array_pos[1]),abs(array_pos[2])]
 				output.write("," + str(array_pos[0]) + "," + str(array_pos[1]) + "," + str( array_pos[2]))
 				output.write("\n")
@@ -415,6 +438,7 @@ with open(filename[:-4]+".txt","w") as output:
 			array_pos = [x1+x2,y1+y2,z1+z2]
 			int_tmpcount2=0
 
+		logger.info(int_tmpcount1)
 time_taken = time.time() - start_time		
 logger.info("Finished, time taken " + str(time_taken))
 print("Finished, time taken " + str(time_taken))	

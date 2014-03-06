@@ -46,16 +46,16 @@ def bytetobinary(byte):
 def hextodec(s):
 	return int(s, 16)
 	
-def findnextcodepos(start_pos, filetype, lookupcode):
+def findnextcodepos(start_pos, filebytes, lookupcode):
 	#ok, lets do things properly for this
 	#the lookupcode should be  4 hex values.  Example [0x00,0x00,0x00,0x02]
 	# will return -1 if code is not found further on in file.  
 	if(len(lookupcode)!=4):
 		raise Exception("Improper lookupcode length")
 	
-	# filetype is a bytearray
+	# filebytes is a bytearray
 	# start_pos is the position the user wants to start at.
-	answer = filetype.index(bytearray((lookupcode[0],lookupcode[1],lookupcode[2],lookupcode[3])),start_pos)+4
+	answer = filebytes.index(bytearray((lookupcode[0],lookupcode[1],lookupcode[2],lookupcode[3])),start_pos)+4
 	logger.debug("Found " + str(lookupcode)+ " returning position: " + str(answer))
 	return answer
 	

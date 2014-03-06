@@ -7,6 +7,9 @@ import logging
 import CVR
 
 logging.basicConfig(level=logging.INFO)			
-CVRfile = CVR.CVREngine("C:/Users/Gregory/Desktop/reverse it/Vwntu.cvr")
+CVRfile = CVR.CVREngine("C:/Users/Gregory/Desktop/reverse it/A.cvr")
 
-	
+CVRfile.replaceAllcolors(-1, 59)
+CVRfile.export("C:/Users/Gregory/Desktop/reverse it/A.txt")
+CVRfile.saveColors("C:/Users/Gregory/Desktop/reverse it/test.cvr")	
+

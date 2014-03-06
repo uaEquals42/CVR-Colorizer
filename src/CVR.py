@@ -89,12 +89,28 @@ class Mesh():
 	def __init__(self, Number, startposition):
 		self.meshname = self.meshname + str(Number) 
 		self.currentLocation = startposition
+	
+	def paletteCodesinUse(self):
+		colorcodes = set()
+		for v in self.voxels:
+			colorcodes.add(v[2])
+		return colorcodes
+	
+	def replacecolorcode(self, fromcolor, tocolor):
+		# if fromcolor is -1 all colors will be replaced with new value
+		if(fromcolor> 255 or tocolor > 255 or tocolor <0 or fromcolor <-1):
+			raise Exception("Invalid input for replacecolorcode")
+		logging.info("Replacing colors for "+ self.meshname)
+		for v in self.voxels:
+			if v[2]==fromcolor or fromcolor==-1:
+				v[2]=tocolor	
+			
 		
 	def addvoxel(self,byteposition, xyzDelta, paletteColor, norm1, norm2):
 		self.currentLocation[0] += xyzDelta[0]
 		self.currentLocation[1] += xyzDelta[1]
 		self.currentLocation[2] += xyzDelta[2]
-		self.voxels.append((byteposition,(self.currentLocation[0],self.currentLocation[1],self.currentLocation[2]), paletteColor, norm1, norm2))
+		self.voxels.append([byteposition,(self.currentLocation[0],self.currentLocation[1],self.currentLocation[2]), paletteColor, norm1, norm2])
 	
 	def dimensions(self):
 		if self.dimensions==(-1,-1,-1):
@@ -195,8 +211,54 @@ class CVREngine():
 		answer = filebytes.index(bytearray((lookupcode[0],lookupcode[1],lookupcode[2],lookupcode[3])),start_pos)+4
 		logging.debug("Found " + str(lookupcode)+ " returning position: " + str(answer))
 		return answer
+
+	def replaceAllcolors(self, fromcolor, newcolor):
+		for p in self.parts:
+			for m in p[1]:
+				m.replacecolorcode(fromcolor, newcolor)
+		
+	def saveColors(self, filename):
+		# First we need to get the original filedata that we are going to modify.
+		with open(self.filename,"rb") as f:
+			CVRfile = bytearray(f.read())
+			logging.info('Opened File')
+		# Then we will modify the data in the bytearray
+		
+		# TODO: Write the code for modifing the values
+		for p in self.parts:
+			for m in p[1]:
+				for v in m.voxels:
+					CVRfile[v[0]+2] = v[2]
+		
+		# Save the modified bytearray to the new filename
+		with open(filename,"wb") as output:	
+			output.write(CVRfile)
+			logging.info("Saved file")
+		
 	
-	
+	def export(self, filename):
+		#Saves in a human and machine readable format to the given filename.
+		with open(filename,"w") as output:	
+			output.write("CVR\n")
+			output.write(self.ModelName1+"\n")
+			output.write(self.ModelName2+"\n")
+			output.write(str(self.int_numberofparts)+"\n")
+			for part in self.parts:
+				output.write("P," + part[0]+"\n")
+				for om in part[1]:
+					for v in om.voxels:
+						output.write("V, "+ str(v[1][0])+ "," + str(v[1][1])+ "," + str(v[1][2]))
+						
+						if(v[2] in self.dict_colors):
+							output.write(","+self.dict_colors[(v[2])])
+				
+						else:
+							output.write(","+"255,  0,242")
+							# TODO: make the user able to choose or what the color for unknown colors will be.
+							logging.warning("Color Code not Known")
+						output.write(",0,0,0") # Normals would be here.. if we knew what they are.
+						output.write("\n")
+				
 		
 	def load(self, filename):
 		with open(filename,"rb") as f:
@@ -256,7 +318,7 @@ class CVREngine():
 		pos=pos + 1 + CVRfile[pos-1]*3  #10 was the right number for ACP which had 145 for its number. 155-145 = 10
 		# Color is wrong on select for the knob parts... as well as the drill arm
 		# It isn't getting the right colors when it is # 145 or higher
-		inttmp = pos + 3*(245-CVRfile[pos-1])  #it won't be reading in the right values for 155-x... yeah.
+		inttmp = pos + 3*(245-CVRfile[pos-1]-1)  #it won't be reading in the right values for 155-x... yeah.
 		colorcount = 0;
 		while pos <= inttmp:
 			self.dict_colors[colorcount] = str(CVRfile[pos]) + "," + str(CVRfile[pos+1]) +"," + str(CVRfile[pos+2])

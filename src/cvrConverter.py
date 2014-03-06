@@ -2,7 +2,7 @@
 import struct
 import logging
 import time
-import webcolors
+
 
 
 
@@ -60,20 +60,77 @@ def findnextcodepos(start_pos, filebytes, lookupcode):
 	return answer
 	
 def colorname(color):
+	colornames = {(0,0,0):"Black",(255,0,0):"Red",(128,128,0):"Olive",(128,0,128):"Purple",(0,0,128):"Deep Blue",(0,255,255):"Sky Blue"}
+	colornames[(255,255,0)] = "Yellow"
+	colornames[(85,43,21)] = "Dark brown"
+	colornames[(192,208,248)] = "Pale blue"
+	colornames[(172,129,81)] = "Light brown"
+	colornames[(143,114,82)] = "Brown"
+	colornames[(120,98,74)] = "Brown"
+	colornames[(54,84,47)] = "Dark green"
+	colornames[(30,53,30)] = "Really dark green"
+	colornames[(215,183,156)] = "Tan with pink tinge"
+	colornames[(182,122,97)] = "Brown with pink tinge"
+	colornames[(113,61,49)] = "Brown with pink tinge"
+	colornames[(70,36,39)] = "Dark brown with pink tinge"
+	colornames[(231,244,231)] = "Light gray with slight blue tinge"
+	colornames[(192,212,205)] = "Grayish green"
+	colornames[(163,188,185)] = "Gray"
+	colornames[(72,88,88)] = "Dark Gray"
+	colornames[(27,33,31)] = "Almost black"
+	colornames[(143,140,18)] = "Muddy Yellow"
+	colornames[(82,66,12)] = "Brown"
+	colornames[(52,29,9)] = "Dark reddish brown"
+	colornames[(232,84,84)] = "Pale bright red"
+	colornames[(248,248,236)] = "White"
+	colornames[(255,255,255)] = "White"
+	colornames[(244,240,212)] = "Pale yellow"
+	colornames[(224,192,96)] = "Brownish yellow"
+	colornames[(232,136,8)] = "Orange"
+	colornames[(236,92,0)] = "Orange red"
+	colornames[(224,44,20)] = "Red"
+	colornames[(176,20,20)] = "Dark red"
+	colornames[(214,157,106)] = "Tan"
+	colornames[(215,184,152)] = "Tan"
+	colornames[(172,54,82)] = "Purple red"
+	colornames[(76,41,13)] = "Brown"
+	colornames[(119,118,40)] = "Olive"
+	colornames[(184,192,96)] = "Pale olive"
+	colornames[(88,140,44)] = "Green"
+	colornames[(132,192,200)] = "Pale blue"
+	colornames[(100,168,184)] = "Dark pale blue"
+	colornames[(77,156,176)] = "Dark pale blue"
+	colornames[(64,115,128)] = "Dark pale blue"
+	colornames[(42,101,120)] = "Dark blue"
+	colornames[(35,90,110)] = "Dark blue"
+	colornames[(17,50,79)] = "Navy"
+	colornames[(14,37,75)] = "Navy"
+	colornames[(68,32,12)] = "Dark brown"
+	colornames[(176,232,188)] = "Pale blue green"
+	colornames[(116,192,160)] = "Greenish blue"
+	colornames[(60,148,124)] = "Greenish blue"
+	colornames[(40,66,61)] = "Very dark greenish blue"
+	colornames[(245,200,96)] = "Yellow"
+	colornames[(0,97,255)] = "Blue"
+	colornames[(191,103,21)] = "Orange-ish brown"
+	colornames[(100,16,156)] = "Purple"
+	colornames[(219,205,22)] = "Yellow"
+	colornames[(0,252,252)] = "Sky blue"
+	colornames[(24,184,228)] = "Sky blue"
 	
 	try:
-		colorname = webcolors.rgb_to_name(color)
+		colorname = colornames(color)
 		return colorname
 	except:
 		colours = {}
-		for name, key in webcolors.css3_names_to_hex.items():
-			red, green, blue = webcolors.hex_to_rgb(key)
+		for key in colornames:
+			red, green, blue = key
 			mred = abs(red - color[0]) 
 			mgeen = abs(green - color[1]) 
 			mblue = abs(blue - color[2]) 
-			colours[(mred + mgeen + mblue)] = name
+			colours[(mred + mgeen + mblue)] = colornames[key]
 		return colours[min(colours.keys())]
-			
+
 	
 	
 ## This could be completely wrong.  YAY!	

@@ -6,13 +6,115 @@ Created on Mar 5, 2014
 import logging
 import struct
 
+
+def colorname(color):
+	colornames = {(0,0,0):"Black",(255,0,0):"Red",(128,128,0):"Olive",(128,0,128):"Purple",(0,0,128):"Deep Blue",(0,255,255):"Sky Blue"}
+	colornames[(255,255,0)] = "Yellow"
+	colornames[(85,43,21)] = "Dark brown"
+	colornames[(192,208,248)] = "Pale blue"
+	colornames[(172,129,81)] = "Light brown"
+	colornames[(143,114,82)] = "Brown"
+	colornames[(120,98,74)] = "Brown"
+	colornames[(54,84,47)] = "Dark green"
+	colornames[(30,53,30)] = "Really dark green"
+	colornames[(215,183,156)] = "Tan with pink tinge"
+	colornames[(182,122,97)] = "Brown with pink tinge"
+	colornames[(113,61,49)] = "Brown with pink tinge"
+	colornames[(70,36,39)] = "Dark brown with pink tinge"
+	colornames[(231,244,231)] = "Light gray with slight blue tinge"
+	colornames[(192,212,205)] = "Grayish green"
+	colornames[(163,188,185)] = "Gray"
+	colornames[(72,88,88)] = "Dark Gray"
+	colornames[(27,33,31)] = "Almost black"
+	colornames[(143,140,18)] = "Muddy Yellow"
+	colornames[(82,66,12)] = "Brown"
+	colornames[(52,29,9)] = "Dark reddish brown"
+	colornames[(232,84,84)] = "Pale bright red"
+	colornames[(248,248,236)] = "White"
+	colornames[(255,255,255)] = "White"
+	colornames[(244,240,212)] = "Pale yellow"
+	colornames[(224,192,96)] = "Brownish yellow"
+	colornames[(232,136,8)] = "Orange"
+	colornames[(236,92,0)] = "Orange red"
+	colornames[(224,44,20)] = "Red"
+	colornames[(176,20,20)] = "Dark red"
+	colornames[(214,157,106)] = "Tan"
+	colornames[(215,184,152)] = "Tan"
+	colornames[(172,54,82)] = "Purple red"
+	colornames[(76,41,13)] = "Brown"
+	colornames[(119,118,40)] = "Olive"
+	colornames[(184,192,96)] = "Pale olive"
+	colornames[(88,140,44)] = "Green"
+	colornames[(132,192,200)] = "Pale blue"
+	colornames[(100,168,184)] = "Dark pale blue"
+	colornames[(77,156,176)] = "Dark pale blue"
+	colornames[(64,115,128)] = "Dark pale blue"
+	colornames[(42,101,120)] = "Dark blue"
+	colornames[(35,90,110)] = "Dark blue"
+	colornames[(17,50,79)] = "Navy"
+	colornames[(14,37,75)] = "Navy"
+	colornames[(68,32,12)] = "Dark brown"
+	colornames[(176,232,188)] = "Pale blue green"
+	colornames[(116,192,160)] = "Greenish blue"
+	colornames[(60,148,124)] = "Greenish blue"
+	colornames[(40,66,61)] = "Very dark greenish blue"
+	colornames[(245,200,96)] = "Yellow"
+	colornames[(0,97,255)] = "Blue"
+	colornames[(191,103,21)] = "Orange-ish brown"
+	colornames[(100,16,156)] = "Purple"
+	colornames[(219,205,22)] = "Yellow"
+	colornames[(0,252,252)] = "Sky blue"
+	colornames[(24,184,228)] = "Sky blue"
+	
+	try:
+		colorname = colornames(color)
+		return colorname
+	except:
+		colours = {}
+		for key in colornames:
+			red, green, blue = key
+			mred = abs(red - color[0]) 
+			mgeen = abs(green - color[1]) 
+			mblue = abs(blue - color[2]) 
+			colours[(mred + mgeen + mblue)] = colornames[key]
+		return colours[min(colours.keys())]
+
+
+
+class Mesh():
+	meshname = "Mesh "
+	dimensions = (-1,-1,-1)
+	voxels = []
+	currentLocation = [0,0,0]
+	def __init__(self, Number, startposition):
+		self.meshname = self.meshname + str(Number) 
+		self.currentLocation = startposition
+		
+	def addvoxel(self,byteposition, xyzDelta, paletteColor, norm1, norm2):
+		self.currentLocation[0] += xyzDelta[0]
+		self.currentLocation[1] += xyzDelta[1]
+		self.currentLocation[2] += xyzDelta[2]
+		self.voxels.append((byteposition,(self.currentLocation[0],self.currentLocation[1],self.currentLocation[2]), paletteColor, norm1, norm2))
+	
+	def dimensions(self):
+		if self.dimensions==(-1,-1,-1):
+			print("Calculate it")
+		else:
+			return self.dimensions
+
 class CVREngine():
 	'''
 	classdocs
 	'''
 	filename=""
-	ModelName=""
+	ModelName1=""
+	ModelName2=""
 	dict_colors = {}
+	int_numberofparts = -1     
+	int_number_of_frames = -1
+	parts = [ ]  # structure will be as follows  
+	#				[["Part Name",[Mesh]], ["Part Name",[Mesh]], etc]
+	
 	
 	
 	def __init__(self, filename):
@@ -63,10 +165,22 @@ class CVREngine():
 		self.dict_directions['11010'] = [ 0, 0, 0]	## d0 This appears only at the end of parts sections for direction for some files!  
 		## Other files don't have it.	
 		
+
+		
+		
 		self.filename = filename
-		
-		
+		self.load(filename)
 	
+	
+		
+	def bytetobinary(self, byte):
+		#Returns a string of length 8 of the byte of data fed to it.
+		#Currently doesn't have any sanity checks on the input data.
+		# TODO: Create a sanity check for the input.
+		stringxx = bin(byte)[2:]
+		while len(stringxx)<8:
+			stringxx = "0" + stringxx
+		return stringxx
 	
 	def findnextcodepos(self, start_pos, filebytes, lookupcode):
 		'''	
@@ -75,17 +189,14 @@ class CVREngine():
 		lookupcode	Should be  4 hex values.  Example [0x00,0x00,0x00,0x02]
 		Return		Will return -1 if code is not found further on in file.  Otherwise the position right after the label.  
 		'''
-		#ok, lets do things properly for this
-		#the lookupcode 
-		# 
 		if(len(lookupcode)!=4):
 			raise Exception("Improper lookupcode length")
 		
-		# filebytes is a bytearray
-		# start_pos is the position the user wants to start at.
 		answer = filebytes.index(bytearray((lookupcode[0],lookupcode[1],lookupcode[2],lookupcode[3])),start_pos)+4
 		logging.debug("Found " + str(lookupcode)+ " returning position: " + str(answer))
 		return answer
+	
+	
 		
 	def load(self, filename):
 		with open(filename,"rb") as f:
@@ -118,8 +229,8 @@ class CVREngine():
 		pos = pos + 4
 		
 		# The name of the model the file was converted from.
-		self.ModelName = struct.unpack(s, CVRfile[pos:pos + dist])[0].decode(encoding='UTF-8')
-		logging.info(self.ModelName)
+		self.ModelName1 = struct.unpack(s, CVRfile[pos:pos + dist])[0].decode(encoding='UTF-8')
+		logging.info(self.ModelName1)
 		
 	
 	
@@ -141,7 +252,7 @@ class CVREngine():
 	
 		# Palette dict_colors
 		pos+=16
-		logging.debug("pallet nums" + str(CVRfile[pos-1]))
+		logging.debug("palette num" + str(CVRfile[pos-1]))
 		pos=pos + 1 + CVRfile[pos-1]*3  #10 was the right number for ACP which had 145 for its number. 155-145 = 10
 		# Color is wrong on select for the knob parts... as well as the drill arm
 		# It isn't getting the right colors when it is # 145 or higher
@@ -176,7 +287,7 @@ class CVREngine():
 		
 	
 		# Name length....
-		pos = self.self.findnextcodepos(pos,CVRfile,[0x00,0x00,0x01,0x04])
+		pos = self.findnextcodepos(pos,CVRfile,[0x00,0x00,0x01,0x04])
 		intNameLength = struct.unpack("I", CVRfile[pos:pos + 4])[0]-8
 		
 		pos+=4
@@ -184,44 +295,38 @@ class CVREngine():
 		s = str(intNameLength)+"s"
 		AnotherName = struct.unpack(s, CVRfile[pos:pos + intNameLength])[0].decode(encoding='UTF-8')
 		logging.info(AnotherName)
-		output.write(AnotherName)
-		output.write("\n")
-		#increment the pos
-		pos+=intNameLength
-	
-		
-		
-		pos = self.self.findnextcodepos(pos,CVRfile,[0x00,0x02,0x04,0x0C])
+		self.ModelName2 = AnotherName
+
+
 		## 00 02 04 0C 00 00 00 nn nn ?? ?? <- nn nn ?? ?? is the number of parts in this object	
-		int_numberofparts = struct.unpack("I", CVRfile[pos+3:pos + 7])[0]
-		logging.info("Number of parts is " + str(int_numberofparts))
+		pos = self.findnextcodepos(pos,CVRfile,[0x00,0x02,0x04,0x0C])
+		self.int_numberofparts = struct.unpack("I", CVRfile[pos+3:pos + 7])[0]
+		logging.info("Number of parts is " + str(self.int_numberofparts))
 		
 		
 		## 00 03 04 0C 00 00 00 nn nn nn nn 	< nn of frames
-		pos = self.self.findnextcodepos(pos,CVRfile,[0x00,0x03,0x04,0x0C])
-		int_number_of_frames = struct.unpack("I", CVRfile[pos+3:pos + 7])[0]
-		logging.info("Number of frames is " + str(int_number_of_frames))
+		pos = self.findnextcodepos(pos,CVRfile,[0x00,0x03,0x04,0x0C])
+		self.int_number_of_frames = struct.unpack("I", CVRfile[pos+3:pos + 7])[0]
+		logging.info("Number of frames is " + str(self.int_number_of_frames))
 	
 		
 		# lets get the current part's name
 		#00 01 04 04	
-		pos = self.self.findnextcodepos(pos,CVRfile,[0x00,0x01,0x04,0x04])
+		pos = self.findnextcodepos(pos,CVRfile,[0x00,0x01,0x04,0x04])
 		partnameLength = CVRfile[pos]-8	
 		logging.debug("Part name length: " + str(partnameLength))  # for srb the value should be 3
 		s = str(partnameLength)+"s"
 		pos+=4
-		AnotherName = struct.unpack(s, CVRfile[pos:pos + partnameLength])[0].decode(encoding='UTF-8')
-		logging.info(AnotherName)
-		output.write(AnotherName)
-		output.write("\n")
+		PartName = struct.unpack(s, CVRfile[pos:pos + partnameLength])[0].decode(encoding='UTF-8')
+		logging.info(PartName)
 		pos+=partnameLength
 		
 		
 		
-		# Grab the next parts location!   This will fail curently!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		# TODO, place into a try catch statement as it will fail for some files.
+		# Grab the next parts location!   This could fail in theory (I noticed an animation file didn't have this section)!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		# TODO: , place into a try catch statement as it will fail for some files.
 		## I should probably make this throw an error if it isn't correct.	
-		pos = self.self.findnextcodepos(pos,CVRfile,[0x00,0x02,0x04,0x04])
+		pos = self.findnextcodepos(pos,CVRfile,[0x00,0x02,0x04,0x04])
 		nextpart = struct.unpack("I", CVRfile[pos:pos+4])[0]+pos
 		logging.info("Location of next part is " + str(nextpart))
 		
@@ -272,8 +377,6 @@ class CVREngine():
 		# Total Number of voxels
 		int_totalvox =  struct.unpack("I", CVRfile[pos:pos+4])[0]
 		logging.info("Total Voxels count " + str(int_totalvox))
-		output.write(str(int_totalvox)+"\n")
-		
 		pos+=4
 		
 		
@@ -290,78 +393,21 @@ class CVREngine():
 		logging.info("MultiMesh?: " + str(bool_multimesh))
 		
 		
-		if(bool_multimesh):
-			#TODO: make this code neater, remove duplication.  God this is ugly here.
-			z1 = struct.unpack("h", CVRfile[pos:pos+2])[0]
-			x1 = struct.unpack("h", CVRfile[pos+2:pos+4])[0]
-			y1 = struct.unpack("h", CVRfile[pos+4:pos+6])[0]
-			logging.info("Pos1," + str(x1) + "," + str(y1) + "," + str(z1))
-	
-			
-			#Bunch of stuff inbetween that I think deals with the viewing area.
-			#Not really sure.
-			#lets... skip it, shall we?
-			pos+= 18
-			
-			z2 = struct.unpack("h", CVRfile[pos:pos+2])[0]
-			x2 = struct.unpack("h", CVRfile[pos+2:pos+4])[0]
-			y2 = struct.unpack("h", CVRfile[pos+4:pos+6])[0]
 		
-			logging.info("Pos2," + str(x2) + "," + str(y2) + "," + str(z2))
 		
-			
-			# Now read how many voxels until the next jump
-			pos+=6
-			vox_count_section = struct.unpack("I", CVRfile[pos:pos+4])[0]
-			logging.info("Voxels to next mesh" + str(vox_count_section))
-			
-			pos+=8
-			
-			# Yeah.... not sure if this is correct... 
-			array_pos = [x1+x2,y1+y2,z1+z2]
-			
-		else:
-			array_pos = [x0,y0,z0]
-			vox_count_section = int_totalvox
+		array_pos = [x0,y0,z0]
+		vox_count_section = int_totalvox
 		
 		
 		logging.info(array_pos)
 		int_tmpcount1 = 0
 		int_tmpcount2 = 0
 		
+		
+		meshnumber = 1
+		meshlist =[]
 		while int_tmpcount1 < int_totalvox:
-			print("looped")
 			
-			while int_tmpcount2 < vox_count_section:	
-				
-				#print(int_tmpcount)
-				#print(pos)
-				if('11010' == bytetobinary(CVRfile[pos])[0:5]):
-					logging.info("Here it is again")  # didn't find any! on ACP00... but on ones that have multimesh conversions into a single part... its there
-					# ok, 
-				else:
-					
-					array_pos[0] = array_pos[0] + dict_directions[bytetobinary(CVRfile[pos])[0:5]][0]
-					array_pos[1] = array_pos[1] + dict_directions[bytetobinary(CVRfile[pos])[0:5]][1]
-					array_pos[2] = array_pos[2] + dict_directions[bytetobinary(CVRfile[pos])[0:5]][2]
-					
-					
-					
-					output.write(str(array_pos[0]) + "," + str(array_pos[1]) + "," + str( array_pos[2]) +"," + dict_colors[CVRfile[pos+2]])  #bytetobinary(CVRfile[pos])[-3:] + "," + str(CVRfile[pos+1]) + "," 
-					
-					# Really crappy normals
-					if(CVRfile[pos+2]>235):
-						logging.debug(str(CVRfile[pos+2]) +":"+ dict_colors[CVRfile[pos+2]])
-					
-					tmparray = [abs(array_pos[0]),abs(array_pos[1]),abs(array_pos[2])]
-					output.write("," + str(array_pos[0]) + "," + str(array_pos[1]) + "," + str( array_pos[2]))
-					output.write("\n")
-					
-				pos+=3
-				int_tmpcount2+=1
-				int_tmpcount1+=1
-				
-				
 			if(bool_multimesh):
 				z1 = struct.unpack("h", CVRfile[pos:pos+2])[0]
 				x1 = struct.unpack("h", CVRfile[pos+2:pos+4])[0]
@@ -390,6 +436,34 @@ class CVREngine():
 				array_pos = [x1+x2,y1+y2,z1+z2]
 				int_tmpcount2=0
 			
-	
-		
 			
+			tmpMesh = Mesh(meshnumber,array_pos)
+			while int_tmpcount2 < vox_count_section:	
+				
+				#print(int_tmpcount)
+				#print(pos)
+				if('11010' == self.bytetobinary(CVRfile[pos])[0:5]):
+					logging.info("Here it is again")  # didn't find any! on ACP00... but on ones that have multimesh conversions into a single part... its there
+					# ok, 
+				else:
+					
+					tmpMesh.addvoxel(pos, self.dict_directions[self.bytetobinary(CVRfile[pos])[0:5]], CVRfile[pos+2], "-1", "-1")
+					
+					#array_pos[0] = array_pos[0] + self.dict_directions[self.bytetobinary(CVRfile[pos])[0:5]][0]
+					#array_pos[1] = array_pos[1] + self.dict_directions[self.bytetobinary(CVRfile[pos])[0:5]][1]
+					#array_pos[2] = array_pos[2] + self.dict_directions[self.bytetobinary(CVRfile[pos])[0:5]][2]
+					
+					
+					
+					#output.write(str(array_pos[0]) + "," + str(array_pos[1]) + "," + str( array_pos[2]) +"," + self.dict_colors[CVRfile[pos+2]])  #bytetobinary(CVRfile[pos])[-3:] + "," + str(CVRfile[pos+1]) + "," 
+					
+				pos+=3
+				int_tmpcount2+=1
+				int_tmpcount1+=1
+				
+			meshlist.append(tmpMesh)	
+		self.parts.append([PartName, meshlist])	
+
+
+		
+		

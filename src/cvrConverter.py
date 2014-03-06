@@ -60,6 +60,7 @@ def findnextcodepos(start_pos, filebytes, lookupcode):
 	return answer
 	
 def colorname(color):
+	
 	try:
 		colorname = webcolors.rgb_to_name(color)
 		return colorname

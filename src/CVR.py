@@ -81,7 +81,7 @@ def colorname(color):
 		return colours[min(colours.keys())]
 
 
-class VoxelPoint():
+class VoxelPoint(object):
 	''' A simple store of voxel data.  Mostly so that code is easier to understand elsewhere'''	
 	def __init__(self, bytepos, location, color, norm1, norm2):
 		self.bytepos = bytepos
@@ -92,19 +92,19 @@ class VoxelPoint():
 		
 		
 
-class Mesh():
+class Mesh(object):
 	''' Contains a list of voxels and other details '''
 	meshname = "Mesh "
-	dimensions = (-1,-1,-1,-1,-1,-1)
+	__dimensions = None
+	currentLocation = None
+	voxels = None
 	
-	voxels = []
-	iter_vox = 0
-	currentLocation = [0,0,0]  #x, y, z
+	
 	def __init__(self, Number, startposition):
 		self.meshname = self.meshname + str(Number) 
 		self.currentLocation = startposition
-	
-	
+		self.voxels = []
+		self.currentLocation = [0,0,0]  #x, y, z
 	
 	def paletteCodesinUse(self):
 		''' Returns a set of the palette numbers in use for this mesh'''
@@ -129,9 +129,9 @@ class Mesh():
 		self.currentLocation[2] += xyzDelta[2]
 		self.voxels.append(VoxelPoint(byteposition,(self.currentLocation[0],self.currentLocation[1],self.currentLocation[2]), paletteColor, norm1, norm2))
 	
-	def calDimensions(self):
+	def dimensions(self):
 		
-		if self.dimensions == (-1,-1,-1,-1,-1,-1):
+		if self.__dimensions == None:
 			logging.info("Calculate diminsions")
 			xmin = self.voxels[0].location[0]
 			xmax = self.voxels[0].location[0]
@@ -153,23 +153,16 @@ class Mesh():
 					ymax = vox.location[1]
 				if vox.location[2] > zmax:
 					zmax = vox.location[2]
-			self.dimensions = (xmin, xmax, ymin, ymax, zmin, zmax)
-		return self.dimensions
+			self.__dimensions = (xmin, xmax, ymin, ymax, zmin, zmax)
+		return self.__dimensions
 				
 				
 
-class CVREngine():
+class CVREngine(object):
 	'''
 	classdocs
 	'''
-	filename=""
-	ModelName1=""
-	ModelName2=""
-	dict_colors = {}
-	int_numberofparts = -1     
-	int_number_of_frames = -1
-	parts = [ ]  # structure will be as follows  
-	#				[["Part Name",[Mesh]], ["Part Name",[Mesh]], etc]
+
 	
 	
 	
@@ -221,11 +214,20 @@ class CVREngine():
 		self.dict_directions['11010'] = [ 0, 0, 0]	## d0 This appears only at the end of parts sections for direction for some files!  
 		## Other files don't have it.	
 		
-
 		
+		
+		self.ModelName1=""
+		self.ModelName2=""
+		self.dict_colors = {}
+		self.int_numberofparts = -1     
+		self.int_number_of_frames = -1
+		self.parts = None  # structure will be as follows  
+		#				[["Part Name",[Mesh]], ["Part Name",[Mesh]], etc]
+		self.parts = []
 		
 		self.filename = filename
 		self.load(filename)
+		logging.info(len(self.parts))
 	
 	
 	def returnMesh(self):

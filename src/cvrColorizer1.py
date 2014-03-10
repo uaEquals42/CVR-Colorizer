@@ -53,8 +53,10 @@ class app():
 		self.filename = filedialog.askopenfilename(filetypes=(("CVR","*.cvr"),))
 		if(len(self.filename)>0):
 			logging.info(self.filename)
+			
 			self.CVRfile = CVR.CVREngine(self.filename)
 			self.setPaletteColors()
+			self.drawMesh('left', 0, 0)
 		
 	def SaveAsFile(self):
 		filename = filedialog.asksaveasfilename(filetypes=(("CVR","*.cvr"),))
@@ -70,8 +72,20 @@ class app():
 	def quit(self):
 		self.root.quit()
 		
-	def drawMesh(self):
+	def drawMesh(self, view, partnum, meshnum):
 		logging.info("Draw the mesh to canvas")
+		
+		#ok for test purposes lets render from one side first
+		#self.canvas_left.
+		print(self.CVRfile.filename)
+		mesh = self.CVRfile.returnMesh()
+		print(mesh.dimensions())
+		#ok lets first see if the viewing area is big enough for the object...
+		print(self.canvas_left.cget('width'))
+		if(abs(mesh.dimensions()[0])+abs(mesh.dimensions()[1])+2 > int(self.canvas_left.cget('width'))):
+			print("Not big enough X")
+		else:
+			print("Big enough X")
 	
 	def setleftcolor(self,e):	
 		if(len(self.filename)>1):
@@ -118,8 +132,9 @@ class app():
 		self.root.columnconfigure(0, weight=1)
 		
 		left = ttk.Labelframe(self.root, text='Left')
-		canvas = Canvas(left)
-		canvas.pack()
+		self.canvas_left = Canvas(left)
+		
+		self.canvas_left.pack()
 		left.grid(column=0, row=0)
 	
 

@@ -82,7 +82,7 @@ def colorname(color):
 
 
 class VoxelPoint():
-	
+	''' A simple store of voxel data.  Mostly so that code is easier to understand elsewhere'''	
 	def __init__(self, bytepos, location, color, norm1, norm2):
 		self.bytepos = bytepos
 		self.location = location
@@ -106,6 +106,7 @@ class Mesh():
 	
 	
 	def paletteCodesinUse(self):
+		''' Returns a set of the palette numbers in use for this mesh'''
 		colorcodes = set()
 		for v in self.voxels:
 			colorcodes.add(v.color)

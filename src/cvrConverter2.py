@@ -6,10 +6,10 @@ Created on Mar 6, 2014
 import logging
 import CVR
 
-logging.basicConfig(level=logging.INFO)			
-CVRfile = CVR.CVREngine("C:/Users/Gregory/Desktop/reverse it/A.cvr")
+logging.basicConfig(level=logging.DEBUG)			
+CVRfile = CVR.CVREngine("C:/Users/Gregory/Desktop/reverse it/allthefiles/Droplet.cvr")
 
-CVRfile.replaceAllcolors(-1, 59)
-CVRfile.export("C:/Users/Gregory/Desktop/reverse it/A.txt")
-CVRfile.saveColors("C:/Users/Gregory/Desktop/reverse it/test.cvr")	
+CVRfile.replaceAllcolors(-1, 38)
+CVRfile.export("C:/Users/Gregory/Desktop/reverse it/Droplet.txt")
+CVRfile.saveColors("C:/Users/Gregory/Desktop/reverse it/Droplet.cvr")	
 

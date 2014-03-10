@@ -95,10 +95,11 @@ class VoxelPoint():
 class Mesh():
 	''' Contains a list of voxels and other details '''
 	meshname = "Mesh "
-	dimensions = (-1,-1,-1)
+	dimensions = (-1,-1,-1,-1,-1,-1)
+	
 	voxels = []
 	iter_vox = 0
-	currentLocation = [0,0,0]
+	currentLocation = [0,0,0]  #x, y, z
 	def __init__(self, Number, startposition):
 		self.meshname = self.meshname + str(Number) 
 		self.currentLocation = startposition
@@ -128,11 +129,34 @@ class Mesh():
 		self.currentLocation[2] += xyzDelta[2]
 		self.voxels.append(VoxelPoint(byteposition,(self.currentLocation[0],self.currentLocation[1],self.currentLocation[2]), paletteColor, norm1, norm2))
 	
-	def dimensions(self):
-		if self.dimensions==(-1,-1,-1):
-			print("Calculate it")
-		else:
-			return self.dimensions
+	def calDimensions(self):
+		
+		if self.dimensions == (-1,-1,-1,-1,-1,-1):
+			logging.info("Calculate diminsions")
+			xmin = self.voxels[0].location[0]
+			xmax = self.voxels[0].location[0]
+			ymin = self.voxels[0].location[1]
+			ymax = self.voxels[0].location[1]
+			zmin = self.voxels[0].location[2]
+			zmax = self.voxels[0].location[2]
+			for vox in self.voxels:
+				if vox.location[0] < xmin:
+					xmin = vox.location[0]
+				if vox.location[1] < ymin:
+					ymin = vox.location[1]
+				if vox.location[2] < zmin:
+					zmin = vox.location[2]
+					
+				if vox.location[0] > xmax:
+					xmax = vox.location[0]
+				if vox.location[1] > ymax:
+					ymax = vox.location[1]
+				if vox.location[2] > zmax:
+					zmax = vox.location[2]
+			self.dimensions = (xmin, xmax, ymin, ymax, zmin, zmax)
+		return self.dimensions
+				
+				
 
 class CVREngine():
 	'''
@@ -204,7 +228,10 @@ class CVREngine():
 		self.load(filename)
 	
 	
+	def returnMesh(self):
+		return self.parts[0][1][0]
 		
+			
 	def bytetobinary(self, byte):
 		#Returns a string of length 8 of the byte of data fed to it.
 		#Currently doesn't have any sanity checks on the input data.

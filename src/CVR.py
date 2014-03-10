@@ -65,6 +65,7 @@ def colorname(color):
 	colornames[(219,205,22)] = "Yellow"
 	colornames[(0,252,252)] = "Sky blue"
 	colornames[(24,184,228)] = "Sky blue"
+	colornames[(255,255,255)] = "White"
 	
 	try:
 		colorname = colornames(color)
@@ -80,20 +81,34 @@ def colorname(color):
 		return colours[min(colours.keys())]
 
 
+class VoxelPoint():
+	
+	def __init__(self, bytepos, location, color, norm1, norm2):
+		self.bytepos = bytepos
+		self.location = location
+		self.color = color
+		self.norm1 = norm1
+		self.norm2 = norm2
+		
+		
 
 class Mesh():
+	''' Contains a list of voxels and other details '''
 	meshname = "Mesh "
 	dimensions = (-1,-1,-1)
 	voxels = []
+	iter_vox = 0
 	currentLocation = [0,0,0]
 	def __init__(self, Number, startposition):
 		self.meshname = self.meshname + str(Number) 
 		self.currentLocation = startposition
 	
+	
+	
 	def paletteCodesinUse(self):
 		colorcodes = set()
 		for v in self.voxels:
-			colorcodes.add(v[2])
+			colorcodes.add(v.color)
 		return colorcodes
 	
 	def replacecolorcode(self, fromcolor, tocolor):
@@ -102,15 +117,15 @@ class Mesh():
 			raise Exception("Invalid input for replacecolorcode")
 		logging.info("Replacing colors for "+ self.meshname)
 		for v in self.voxels:
-			if v[2]==fromcolor or fromcolor==-1:
-				v[2]=tocolor	
+			if v.color==fromcolor or fromcolor==-1:
+				v.color=tocolor	
 			
 		
 	def addvoxel(self,byteposition, xyzDelta, paletteColor, norm1, norm2):
 		self.currentLocation[0] += xyzDelta[0]
 		self.currentLocation[1] += xyzDelta[1]
 		self.currentLocation[2] += xyzDelta[2]
-		self.voxels.append([byteposition,(self.currentLocation[0],self.currentLocation[1],self.currentLocation[2]), paletteColor, norm1, norm2])
+		self.voxels.append(VoxelPoint(byteposition,(self.currentLocation[0],self.currentLocation[1],self.currentLocation[2]), paletteColor, norm1, norm2))
 	
 	def dimensions(self):
 		if self.dimensions==(-1,-1,-1):
@@ -228,7 +243,7 @@ class CVREngine():
 		for p in self.parts:
 			for m in p[1]:
 				for v in m.voxels:
-					CVRfile[v[0]+2] = v[2]
+					CVRfile[v.bytepos+2] = v.color
 		
 		# Save the modified bytearray to the new filename
 		with open(filename,"wb") as output:	
@@ -247,10 +262,11 @@ class CVREngine():
 				output.write("P," + part[0]+"\n")
 				for om in part[1]:
 					for v in om.voxels:
-						output.write("V, "+ str(v[1][0])+ "," + str(v[1][1])+ "," + str(v[1][2]))
 						
-						if(v[2] in self.dict_colors):
-							output.write(","+self.dict_colors[(v[2])])
+						output.write("V, "+ str(v.location[0])+ "," + str(v.location[1])+ "," + str(v.location[2]))
+						
+						if(v.color in self.dict_colors):
+							output.write(","+self.dict_colors[(v.color)])
 				
 						else:
 							output.write(","+"255,  0,242")
@@ -510,14 +526,6 @@ class CVREngine():
 				else:
 					
 					tmpMesh.addvoxel(pos, self.dict_directions[self.bytetobinary(CVRfile[pos])[0:5]], CVRfile[pos+2], "-1", "-1")
-					
-					#array_pos[0] = array_pos[0] + self.dict_directions[self.bytetobinary(CVRfile[pos])[0:5]][0]
-					#array_pos[1] = array_pos[1] + self.dict_directions[self.bytetobinary(CVRfile[pos])[0:5]][1]
-					#array_pos[2] = array_pos[2] + self.dict_directions[self.bytetobinary(CVRfile[pos])[0:5]][2]
-					
-					
-					
-					#output.write(str(array_pos[0]) + "," + str(array_pos[1]) + "," + str( array_pos[2]) +"," + self.dict_colors[CVRfile[pos+2]])  #bytetobinary(CVRfile[pos])[-3:] + "," + str(CVRfile[pos+1]) + "," 
 					
 				pos+=3
 				int_tmpcount2+=1

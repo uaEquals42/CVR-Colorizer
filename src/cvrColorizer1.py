@@ -78,32 +78,46 @@ class app():
 		print
 		mesh = self.CVRfile.returnMesh()
 		self.drawMesh('left', mesh, self.canvas_left)
-		self.drawMesh('right', mesh, self.canvas_right)
-		self.drawMesh('top', mesh, self.canvas_top)
-		self.drawMesh('bottom', mesh, self.canvas_bottom)
-		self.drawMesh('front', mesh, self.canvas_front)
+		#self.drawMesh('right', mesh, self.canvas_right)
+		#self.drawMesh('top', mesh, self.canvas_top)
+		#self.drawMesh('bottom', mesh, self.canvas_bottom)
+		#self.drawMesh('front', mesh, self.canvas_front)
 		self.drawMesh('back', mesh, self.canvas_back)
 		
 		
 	def drawMesh(self, view, mesh, canvas_draw):
 		logging.info("Draw the mesh to canvas")
+		xvalue = 0
+		zvalue = 2
+		z_direction = +1
+		x_direction = +1
+		if view=="left":
+			xvalue = 0 # x = x
+			zvalue = 2 # z = z
+			z_direction = +1
+			x_direction = +1
+		if view=="back":
+			xvalue = 2 # x = z
+			zvalue = 0 #z = x
+			z_direction = +1
+			x_direction = +1
 		canvas_draw.delete(ALL)
 		#ok for test purposes lets render from one side first
 		#self.canvas_left.
-		print(self.CVRfile.filename)
+		logging.debug(self.CVRfile.filename)
 		
-		print(mesh.dimensions())
+		logging.info(mesh.dimensions())
 		#ok lets first see if the viewing area is big enough for the object...
-		xcalc = 2*(abs(mesh.dimensions()[0])+abs(mesh.dimensions()[1]))+40
-		ycalc = 2*(abs(mesh.dimensions()[2])+abs(mesh.dimensions()[3]))+40
+		xcalc = 2*(abs(mesh.dimensions()[2*xvalue])+abs(mesh.dimensions()[2*xvalue+1]))+20
+		ycalc = 2*(abs(mesh.dimensions()[2])+abs(mesh.dimensions()[3]))+20
 		canvas_draw.configure(width=xcalc, height=ycalc)
 	
 		
 			
-		x_offset = -2*mesh.dimensions()[0]+10  #aka -xmin
+		x_offset = -2*mesh.dimensions()[2*xvalue]+10  #aka -xmin
 		y_offset = 2*mesh.dimensions()[3]+10
 		
-		
+		print(x_offset)
 	
 		# ok, for the view it will be x,y and a z.  Z will be kept track of so that we know if something should be in front
 		# of something else or not.  
@@ -112,13 +126,19 @@ class app():
 		
 		dict_display = {}  # key is (display_x,display_y)  value is (z, colorhash, (x,y,z))
 		for vox in mesh.voxels:
-			test_x = vox.location[0]*2+x_offset
+			test_x = vox.location[xvalue]*2+x_offset
 			test_y = -vox.location[1]*2+y_offset
-			if (test_x,test_y) in dict_display:
-				if dict_display[(test_x,test_y)][0] < vox.location[2]:
-					dict_display[(test_x,test_y)] = (vox.location[2],self.colorhashes[vox.color], vox.location)
+			
+			if(vox.color < len(self.colorhashes)):
+				color_hash = self.colorhashes[vox.color]
 			else:
-				dict_display[(test_x,test_y)] = (vox.location[2],self.colorhashes[vox.color], vox.location)
+				color_hash = self.unknowncolors
+			
+			if (test_x,test_y) in dict_display:
+				if dict_display[(test_x,test_y)][0] < z_direction*vox.location[zvalue]:
+					dict_display[(test_x,test_y)] = (vox.location[zvalue],color_hash, vox.location)
+			else:
+				dict_display[(test_x,test_y)] = (vox.location[zvalue],color_hash, vox.location)
 		
 		# now draw it on the canvas
 		for key in dict_display.keys():

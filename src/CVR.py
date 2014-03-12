@@ -94,13 +94,13 @@ class VoxelPoint(object):
 
 class Mesh(object):
 	''' Contains a list of voxels and other details '''
-	meshname = "Mesh "
-	__dimensions = None
-	currentLocation = None
-	voxels = None
+	
 	
 	
 	def __init__(self, Number, startposition):
+		
+		self.meshname = "Mesh "
+		self.__dimensions = None
 		self.meshname = self.meshname + str(Number) 
 		self.currentLocation = startposition
 		self.voxels = []

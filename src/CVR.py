@@ -52,7 +52,7 @@ def colorname(color):
 	colornames[(42,101,120)] = "Dark blue"
 	colornames[(35,90,110)] = "Dark blue"
 	colornames[(17,50,79)] = "Navy"
-	colornames[(14,37,75)] = "Navy"
+	colornames[(14,37,75)] = "Navy"  
 	colornames[(68,32,12)] = "Dark brown"
 	colornames[(176,232,188)] = "Pale blue green"
 	colornames[(116,192,160)] = "Greenish blue"

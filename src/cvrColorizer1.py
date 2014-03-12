@@ -10,15 +10,17 @@ from tkinter import *
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
+from tkinter import colorchooser
 
-logging.basicConfig(level=logging.DEBUG)		
+
+logging.basicConfig(level=logging.INFO)		
 
 class app():
 	
 	leftcolor=-1
 	rightcolor=-1
 	filename=""
-	colorhashes={}
+	
 	
 	def makestringlonger(self, s, length):
 		while(len(s)<length):
@@ -44,7 +46,7 @@ class app():
 			self.Colorarea.itemconfig(i+1, fill=fillcolor) 
 			i = i + 1
 		while i <= 256:
-			self.Colorarea.itemconfig(i+1, fill="white") 
+			self.Colorarea.itemconfig(i+1, fill=self.unknowncolors) 
 			
 			i = i + 1
 		
@@ -56,7 +58,7 @@ class app():
 			
 			self.CVRfile = CVR.CVREngine(self.filename)
 			self.setPaletteColors()
-			self.drawMesh('left', 0, 0)
+			self.updateviews()
 		
 	def SaveAsFile(self):
 		filename = filedialog.asksaveasfilename(filetypes=(("CVR","*.cvr"),))
@@ -71,46 +73,90 @@ class app():
 		
 	def quit(self):
 		self.root.quit()
+	
+	def updateviews(self):
+		print
+		mesh = self.CVRfile.returnMesh()
+		self.drawMesh('left', mesh, self.canvas_left)
+		self.drawMesh('right', mesh, self.canvas_right)
+		self.drawMesh('top', mesh, self.canvas_top)
+		self.drawMesh('bottom', mesh, self.canvas_bottom)
+		self.drawMesh('front', mesh, self.canvas_front)
+		self.drawMesh('back', mesh, self.canvas_back)
 		
-	def drawMesh(self, view, partnum, meshnum):
+		
+	def drawMesh(self, view, mesh, canvas_draw):
 		logging.info("Draw the mesh to canvas")
-		
+		canvas_draw.delete(ALL)
 		#ok for test purposes lets render from one side first
 		#self.canvas_left.
 		print(self.CVRfile.filename)
-		mesh = self.CVRfile.returnMesh()
+		
 		print(mesh.dimensions())
 		#ok lets first see if the viewing area is big enough for the object...
-		print(self.canvas_left.cget('width'))
-		if(abs(mesh.dimensions()[0])+abs(mesh.dimensions()[1])+2 > int(self.canvas_left.cget('width'))):
-			print("Not big enough X")
-		else:
-			print("Big enough X")
+		xcalc = 2*(abs(mesh.dimensions()[0])+abs(mesh.dimensions()[1]))+40
+		ycalc = 2*(abs(mesh.dimensions()[2])+abs(mesh.dimensions()[3]))+40
+		canvas_draw.configure(width=xcalc, height=ycalc)
 	
+		
+			
+		x_offset = -2*mesh.dimensions()[0]+10  #aka -xmin
+		y_offset = 2*mesh.dimensions()[3]+10
+		
+		
+	
+		# ok, for the view it will be x,y and a z.  Z will be kept track of so that we know if something should be in front
+		# of something else or not.  
+		
+		
+		
+		dict_display = {}  # key is (display_x,display_y)  value is (z, colorhash, (x,y,z))
+		for vox in mesh.voxels:
+			test_x = vox.location[0]*2+x_offset
+			test_y = -vox.location[1]*2+y_offset
+			if (test_x,test_y) in dict_display:
+				if dict_display[(test_x,test_y)][0] < vox.location[2]:
+					dict_display[(test_x,test_y)] = (vox.location[2],self.colorhashes[vox.color], vox.location)
+			else:
+				dict_display[(test_x,test_y)] = (vox.location[2],self.colorhashes[vox.color], vox.location)
+		
+		# now draw it on the canvas
+		for key in dict_display.keys():
+			canvas_draw.create_rectangle(key[0],key[1],key[0]+2,key[1]+2, width=0, fill=dict_display[key][1])
+		
+		
 	def setleftcolor(self,e):	
-		if(len(self.filename)>1):
+		if(len(self.filename)>0):
+			
 			self.leftcolor = (math.floor((e.y-2)/20)) * 32 + math.floor(e.x/20)
 			logging.info(self.leftcolor)
-			self.Colorchoise.itemconfigure(2, fill=self.colorhashes[self.leftcolor])
+			if(self.leftcolor < len(self.colorhashes)):
+				self.Colorchoise.itemconfigure(2, fill=self.colorhashes[self.leftcolor])
+			else:
+				self.Colorchoise.itemconfigure(2, fill=self.unknowncolors)
 			
 	def __init__(self):
+		self.unknowncolors='#FF00DC'
 		self.root = Tk()
 		self.root.title("CVR Colorizer 1.0")
 		self.root.option_add('*tearOff', FALSE)
-		
+		self.colorhashes={}
 		# create a toplevel menu
 		menubar = Menu(self.root)
 		menu_file = Menu(menubar)
 		
 		menu_view = Menu(menubar)
+		menu_options = Menu(menubar)
 		menubar.add_cascade(menu=menu_file, label='File')
-		
+		menubar.add_cascade(menu=menu_options, label='Options')
 		menubar.add_cascade(menu=menu_view, label='Views')
 		
 		menu_file.add_command(label='Open...', command=lambda: self.openFile())
 		menu_file.add_command(label='Save As', command=lambda: self.SaveAsFile())
 		menu_file.add_command(label='Export', command=lambda: self.ExportFile())
 		menu_file.add_command(label='Exit', command=lambda: self.quit())
+		
+		menu_options.add_command(label='Select color for unknown colors', command=lambda: colorchooser.askcolor(initialcolor=self.unknowncolors))
 		
 		str_front = StringVar()
 		str_left = StringVar()
@@ -131,15 +177,52 @@ class app():
 		self.root.config(menu=menubar)
 		self.root.columnconfigure(0, weight=1)
 		
-		left = ttk.Labelframe(self.root, text='Left')
-		self.canvas_left = Canvas(left)
+		frame_views = ttk.Frame(self.root)
+		frame_views.grid(column=0, row=0)
 		
+		lf_top = ttk.Labelframe(frame_views, text='Top')
+		self.canvas_top = Canvas(lf_top)
+		self.canvas_top.pack()
+		lf_top.grid(column=0, row=0)
+		
+		lf_left = ttk.Labelframe(frame_views, text='Left')
+		self.canvas_left = Canvas(lf_left)
 		self.canvas_left.pack()
-		left.grid(column=0, row=0)
+		lf_left.grid(column=1, row=0)
+		
+		lf_front = ttk.Labelframe(frame_views, text='Front')
+		self.canvas_front = Canvas(lf_front)
+		self.canvas_front.pack()
+		lf_front.grid(column=2, row=0)
+		
+		lf_bottom = ttk.Labelframe(frame_views, text='Bottom')
+		self.canvas_bottom = Canvas(lf_bottom)
+		self.canvas_bottom.pack()
+		lf_bottom.grid(column=0, row=1)
+		
+		lf_right = ttk.Labelframe(frame_views, text='Right')
+		self.canvas_right = Canvas(lf_right)
+		self.canvas_right.pack()
+		lf_right.grid(column=1, row=1)
+		
+		lf_back = ttk.Labelframe(frame_views, text='Back')
+		self.canvas_back = Canvas(lf_back)
+		self.canvas_back.pack()
+		lf_back.grid(column=2, row=1)
+		
 	
+		frame_meshselect = ttk.Frame(self.root)
+		frame_meshselect.grid(column=0, row=1)
+		
+		button_left = ttk.Button(frame_meshselect, text='<-', command=lambda: print("left"))
+		label_current_dispaly = ttk.Label(frame_meshselect, text='Middle:')
+		button_right = ttk.Button(frame_meshselect, text='->', command=lambda: print("Right"))
+		button_left.grid(column=0, row=0)
+		label_current_dispaly.grid(column=1, row=0)
+		button_right.grid(column=2, row=0)
 
 		self.Colorarea = Canvas(self.root, height=9*20+2, width=640 )
-		self.Colorarea.grid(column=0, row=1)
+		self.Colorarea.grid(column=0, row=2)
 		# I could also use a canvas to generate the color picker....
 		r = 2
 		column2 = 0
@@ -160,7 +243,7 @@ class app():
 		self.Colorchoise.create_rectangle((17,17,47,47), fill="white")
 		self.Colorchoise.create_rectangle((2,2,32,32), fill="white")
 		
-		self.Colorchoise.grid(column=0, row=2)
+		self.Colorchoise.grid(column=0, row=3)
 		
 		
 		self.root.mainloop()

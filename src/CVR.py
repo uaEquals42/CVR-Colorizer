@@ -1,8 +1,8 @@
-'''
+"""
 Created on Mar 5, 2014
 
 @author: Gregory Jordan
-'''
+"""
 import logging
 import struct
 
@@ -82,7 +82,7 @@ def colorname(color):
 
 
 class VoxelPoint(object):
-	''' A simple store of voxel data.  Mostly so that code is easier to understand elsewhere'''	
+	""" A simple store of voxel data.  Mostly so that code is easier to understand elsewhere"""	
 	def __init__(self, bytepos, location, color, norm1, norm2):
 		self.bytepos = bytepos
 		self.location = location
@@ -93,7 +93,7 @@ class VoxelPoint(object):
 		
 
 class Mesh(object):
-	''' Contains a list of voxels and other details '''
+	""" Contains a list of voxels and other details """
 	
 	
 	
@@ -107,7 +107,7 @@ class Mesh(object):
 		self.currentLocation = [0,0,0]  #x, y, z
 	
 	def paletteCodesinUse(self):
-		''' Returns a set of the palette numbers in use for this mesh'''
+		""" Returns a set of the palette numbers in use for this mesh"""
 		colorcodes = set()
 		for v in self.voxels:
 			colorcodes.add(v.color)
@@ -159,17 +159,17 @@ class Mesh(object):
 				
 
 class CVREngine(object):
-	'''
+	"""
 	classdocs
-	'''
+	"""
 
 	
 	
 	
 	def __init__(self, filename):
-		'''
+		"""
 		filename	The CVR file to load.
-		'''
+		"""
 		
 		## Below is the lookup chart for knowing what value means which directions.	
 		"""  This is the view of the model when first loaded in CVRPlay.exe.  Note, 
@@ -244,12 +244,12 @@ class CVREngine(object):
 		return stringxx
 	
 	def findnextcodepos(self, start_pos, filebytes, lookupcode):
-		'''	
+		"""	
 		start_pos	Where to start the search from.
 		filebytes	The array of bytes that we are searching in.
 		lookupcode	Should be  4 hex values.  Example [0x00,0x00,0x00,0x02]
 		Return		Will return -1 if code is not found further on in file.  Otherwise the position right after the label.  
-		'''
+		"""
 		if(len(lookupcode)!=4):
 			raise Exception("Improper lookupcode length")
 		

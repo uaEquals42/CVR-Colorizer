@@ -52,6 +52,8 @@ class app():
 		
 	
 	def openFile(self):
+		self.int_part_number = 0
+		self.int_mesh_number = 0
 		self.filename = filedialog.askopenfilename(filetypes=(("CVR","*.cvr"),))
 		if(len(self.filename)>0):
 			logging.info(self.filename)
@@ -74,9 +76,20 @@ class app():
 	def quit(self):
 		self.root.quit()
 	
+	def next_mesh(self):
+		self.int_mesh_number = self.int_mesh_number + 1
+		if self.int_mesh_number >= len(self.CVRfile.return_part(self.int_part_number)[1]):
+			self.int_mesh_number = 0
+		self.set_descriptor_text()
+		self.updateviews()
+		
+	def set_descriptor_text(self):
+		pname = self.CVRfile.part_name(self.int_part_number)
+		mname = self.CVRfile.returnMesh(self.int_part_number, self.int_mesh_number).meshname
+		self.label_current_dispaly.configure(text=pname+": " + mname)
+		
 	def updateviews(self):
-		print
-		mesh = self.CVRfile.returnMesh()
+		mesh = self.CVRfile.returnMesh(self.int_part_number, self.int_mesh_number)
 		self.drawMesh('left', mesh, self.canvas_left)
 		self.drawMesh('right', mesh, self.canvas_right)
 		self.drawMesh('top', mesh, self.canvas_top)
@@ -198,6 +211,8 @@ class app():
 		self.leftcolor=-1
 		self.rightcolor=-1
 		self.filename=""
+		self.int_part_number = 0
+		self.int_mesh_number = 0
 		
 		
 		# create a toplevel menu
@@ -273,11 +288,11 @@ class app():
 		frame_meshselect = ttk.Frame(self.root)
 		frame_meshselect.grid(column=0, row=1)
 		
-		button_left = ttk.Button(frame_meshselect, text='<-', command=lambda: print("left"))
-		label_current_dispaly = ttk.Label(frame_meshselect, text='Middle:')
-		button_right = ttk.Button(frame_meshselect, text='->', command=lambda: print("Right"))
+		button_left = ttk.Button(frame_meshselect, text='<', command=lambda: print("left"))
+		self.label_current_dispaly = ttk.Label(frame_meshselect, text='?????')
+		button_right = ttk.Button(frame_meshselect, text='>', command=lambda: self.next_mesh())
 		button_left.grid(column=0, row=0)
-		label_current_dispaly.grid(column=1, row=0)
+		self.label_current_dispaly.grid(column=1, row=0)
 		button_right.grid(column=2, row=0)
 
 		self.Colorarea = Canvas(self.root, height=9*20+2, width=640 )

@@ -132,7 +132,7 @@ class Mesh(object):
 	def dimensions(self):
 		
 		if self.__dimensions == None:
-			logging.info("Calculate diminsions")
+			logging.info("Calculate dimensions")
 			xmin = self.voxels[0].location[0]
 			xmax = self.voxels[0].location[0]
 			ymin = self.voxels[0].location[1]
@@ -230,10 +230,14 @@ class CVREngine(object):
 		logging.info(len(self.parts))
 	
 	
-	def returnMesh(self):
-		# TODO: make this into a proper mesh return function.
-		return self.parts[0][1][0]
+	def returnMesh(self, int_part_num, int_mesh_num):
 		
+		return self.parts[int_part_num][1][int_mesh_num]
+	
+	def part_name(self, int_part_num):
+		return self.parts[int_part_num][0]
+	def return_part(self, int_part_num):
+		return self.parts[int_part_num]	
 			
 	def bytetobinary(self, byte):
 		""" 
@@ -242,7 +246,7 @@ class CVREngine(object):
 		"""
 		
 		stringxx = bin(byte)[2:]
-		if stringxx > 8:
+		if len(stringxx) > 8:
 			raise Exception("Byte was too big!")
 		while len(stringxx)<8:
 			stringxx = "0" + stringxx
@@ -526,7 +530,7 @@ class CVREngine(object):
 		int_tmpcount2 = 0
 		
 		
-		meshnumber = 1
+		meshnumber = 0
 		meshlist =[]
 		while int_tmpcount1 < int_totalvox:
 			
@@ -576,6 +580,7 @@ class CVREngine(object):
 				int_tmpcount1+=1
 				
 			meshlist.append(tmpMesh)	
+			meshnumber = meshnumber + 1
 		self.parts.append([PartName, meshlist])	
 
 

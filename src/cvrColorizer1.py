@@ -17,9 +17,7 @@ logging.basicConfig(level=logging.INFO)
 
 class app():
 	
-	leftcolor=-1
-	rightcolor=-1
-	filename=""
+
 	
 	
 	def makestringlonger(self, s, length):
@@ -179,14 +177,27 @@ class app():
 				self.Colorchoise.itemconfigure(2, fill=self.colorhashes[self.leftcolor])
 			else:
 				self.Colorchoise.itemconfigure(2, fill=self.unknowncolors)
+		
+		
+	def setrightcolor(self,e):	
+		if(len(self.filename)>0):
 			
+			self.rightcolor = (math.floor((e.y-2)/20)) * 32 + math.floor(e.x/20)
+			logging.info(self.rightcolor)
+			if(self.rightcolor < len(self.colorhashes)):
+				self.Colorchoise.itemconfigure(1, fill=self.colorhashes[self.rightcolor])
+			else:
+				self.Colorchoise.itemconfigure(1, fill=self.unknowncolors)
+						
 	def __init__(self):
 		self.unknowncolors='#FF00DC'
 		self.root = Tk()
 		self.root.title("CVR Colorizer 1.0")
 		self.root.option_add('*tearOff', FALSE)
 		self.colorhashes={}
-		
+		self.leftcolor=-1
+		self.rightcolor=-1
+		self.filename=""
 		
 		
 		# create a toplevel menu
@@ -282,6 +293,7 @@ class app():
 				bleh = self.Colorarea.create_rectangle((column2*20, r, column2*20+20, r+20), outline='black', fill="white")
 				
 				self.Colorarea.tag_bind(bleh, "<Button-1>", lambda e: self.setleftcolor(e))
+				self.Colorarea.tag_bind(bleh, "<Button-3>", lambda e: self.setrightcolor(e))
 				
 				column2 = column2 + 1
 				

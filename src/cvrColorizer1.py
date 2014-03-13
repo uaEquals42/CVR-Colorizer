@@ -30,6 +30,7 @@ class app():
 						
 	
 	def setPaletteColors(self):
+		
 		i = 0
 		while i < len(self.CVRfile.dict_colors):
 			#print(self.CVRfile.dict_colors[i].replace(",",""))
@@ -78,29 +79,40 @@ class app():
 		print
 		mesh = self.CVRfile.returnMesh()
 		self.drawMesh('left', mesh, self.canvas_left)
-		#self.drawMesh('right', mesh, self.canvas_right)
+		self.drawMesh('right', mesh, self.canvas_right)
 		#self.drawMesh('top', mesh, self.canvas_top)
 		#self.drawMesh('bottom', mesh, self.canvas_bottom)
-		#self.drawMesh('front', mesh, self.canvas_front)
+		self.drawMesh('front', mesh, self.canvas_front)
 		self.drawMesh('back', mesh, self.canvas_back)
 		
 		
 	def drawMesh(self, view, mesh, canvas_draw):
+		print(view)
 		logging.info("Draw the mesh to canvas")
 		xvalue = 0
 		zvalue = 2
 		z_direction = +1
 		x_direction = +1
-		if view=="left":
+		if view=="right":
 			xvalue = 0 # x = x
 			zvalue = 2 # z = z
 			z_direction = +1
 			x_direction = +1
+		if view=="left":
+			xvalue = 0 # x = x
+			zvalue = 2 # z = z
+			z_direction = -1
+			x_direction = -1
 		if view=="back":
 			xvalue = 2 # x = z
 			zvalue = 0 #z = x
 			z_direction = +1
 			x_direction = +1
+		if view=="front":
+			xvalue = 2 # use z for the screenspace x value
+			zvalue = 0 #z = x
+			z_direction = +1
+			x_direction = -1  # We want the screenspace x value to go the opposite direction
 		canvas_draw.delete(ALL)
 		#ok for test purposes lets render from one side first
 		#self.canvas_left.
@@ -113,8 +125,11 @@ class app():
 		canvas_draw.configure(width=xcalc, height=ycalc)
 	
 		
+		if x_direction > 0:
+			x_offset = -2*mesh.dimensions()[2*xvalue]+10  #aka -xmin
+		else:
+			x_offset = 2*mesh.dimensions()[2*xvalue+1]+10
 			
-		x_offset = -2*mesh.dimensions()[2*xvalue]+10  #aka -xmin
 		y_offset = 2*mesh.dimensions()[3]+10
 		
 		print(x_offset)
@@ -126,7 +141,7 @@ class app():
 		
 		dict_display = {}  # key is (display_x,display_y)  value is (z, colorhash, (x,y,z))
 		for vox in mesh.voxels:
-			test_x = vox.location[xvalue]*2+x_offset
+			test_x = x_direction*vox.location[xvalue]*2+x_offset
 			test_y = -vox.location[1]*2+y_offset
 			
 			if(vox.color < len(self.colorhashes)):

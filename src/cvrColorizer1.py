@@ -30,10 +30,11 @@ class app():
 						
 	
 	def setPaletteColors(self):
-		
+		"""
+		Goes through the squares on the canvas and assigns them their colors.
+		"""
 		i = 0
 		while i < len(self.CVRfile.dict_colors):
-			#print(self.CVRfile.dict_colors[i].replace(",",""))
 			r = hex(int(self.CVRfile.dict_colors[i].split(",")[0]))[2:]
 			g = hex(int(self.CVRfile.dict_colors[i].split(",")[1]))[2:]
 			b = hex(int(self.CVRfile.dict_colors[i].split(",")[2]))[2:]
@@ -80,32 +81,41 @@ class app():
 		mesh = self.CVRfile.returnMesh()
 		self.drawMesh('left', mesh, self.canvas_left)
 		self.drawMesh('right', mesh, self.canvas_right)
-		#self.drawMesh('top', mesh, self.canvas_top)
-		#self.drawMesh('bottom', mesh, self.canvas_bottom)
+		self.drawMesh('top', mesh, self.canvas_top)
+		self.drawMesh('bottom', mesh, self.canvas_bottom)
 		self.drawMesh('front', mesh, self.canvas_front)
 		self.drawMesh('back', mesh, self.canvas_back)
 		
 		
 	def drawMesh(self, view, mesh, canvas_draw):
-		print(view)
-		logging.info("Draw the mesh to canvas")
-		xvalue = 0
-		zvalue = 2
-		z_direction = +1
-		x_direction = +1
+		
+		logging.debug("Draw the mesh to canvas")
+		yvalue = 1
+		if view=="top":
+			xvalue = 2 
+			zvalue = 1 
+			yvalue = 0
+			z_direction = +1
+			x_direction = +1
+		if view=="bottom":
+			xvalue = 2 
+			zvalue = 1 
+			yvalue = 0
+			z_direction = -1
+			x_direction = -1
 		if view=="right":
 			xvalue = 0 # x = x
 			zvalue = 2 # z = z
 			z_direction = +1
 			x_direction = +1
 		if view=="left":
-			xvalue = 0 # x = x
-			zvalue = 2 # z = z
+			xvalue = 0 
+			zvalue = 2 
 			z_direction = -1
 			x_direction = -1
 		if view=="back":
-			xvalue = 2 # x = z
-			zvalue = 0 #z = x
+			xvalue = 2 
+			zvalue = 0 
 			z_direction = +1
 			x_direction = +1
 		if view=="front":
@@ -118,10 +128,10 @@ class app():
 		#self.canvas_left.
 		logging.debug(self.CVRfile.filename)
 		
-		logging.info(mesh.dimensions())
+		logging.debug(mesh.dimensions())
 		#ok lets first see if the viewing area is big enough for the object...
 		xcalc = 2*(abs(mesh.dimensions()[2*xvalue])+abs(mesh.dimensions()[2*xvalue+1]))+20
-		ycalc = 2*(abs(mesh.dimensions()[2])+abs(mesh.dimensions()[3]))+20
+		ycalc = 2*(abs(mesh.dimensions()[2*yvalue])+abs(mesh.dimensions()[2*yvalue+1]))+20
 		canvas_draw.configure(width=xcalc, height=ycalc)
 	
 		
@@ -130,9 +140,9 @@ class app():
 		else:
 			x_offset = 2*mesh.dimensions()[2*xvalue+1]+10
 			
-		y_offset = 2*mesh.dimensions()[3]+10
+		y_offset = 2*mesh.dimensions()[2*yvalue+1]+10
 		
-		print(x_offset)
+		#print(x_offset)
 	
 		# ok, for the view it will be x,y and a z.  Z will be kept track of so that we know if something should be in front
 		# of something else or not.  
@@ -142,7 +152,7 @@ class app():
 		dict_display = {}  # key is (display_x,display_y)  value is (z, colorhash, (x,y,z))
 		for vox in mesh.voxels:
 			test_x = x_direction*vox.location[xvalue]*2+x_offset
-			test_y = -vox.location[1]*2+y_offset
+			test_y = -vox.location[yvalue]*2+y_offset
 			
 			if(vox.color < len(self.colorhashes)):
 				color_hash = self.colorhashes[vox.color]
@@ -176,6 +186,9 @@ class app():
 		self.root.title("CVR Colorizer 1.0")
 		self.root.option_add('*tearOff', FALSE)
 		self.colorhashes={}
+		
+		
+		
 		# create a toplevel menu
 		menubar = Menu(self.root)
 		menu_file = Menu(menubar)

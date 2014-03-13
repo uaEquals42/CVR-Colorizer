@@ -231,14 +231,19 @@ class CVREngine(object):
 	
 	
 	def returnMesh(self):
+		# TODO: make this into a proper mesh return function.
 		return self.parts[0][1][0]
 		
 			
 	def bytetobinary(self, byte):
-		#Returns a string of length 8 of the byte of data fed to it.
-		#Currently doesn't have any sanity checks on the input data.
-		# TODO: Create a sanity check for the input.
+		""" 
+		Returns a string of length 8 of the byte of data fed to it.
+		Currently doesn't have any sanity checks on the input data.
+		"""
+		
 		stringxx = bin(byte)[2:]
+		if stringxx > 8:
+			raise Exception("Byte was too big!")
 		while len(stringxx)<8:
 			stringxx = "0" + stringxx
 		return stringxx
@@ -258,18 +263,26 @@ class CVREngine(object):
 		return answer
 
 	def replaceAllcolors(self, fromcolor, newcolor):
+		"""
+		Replaces all of color 'fromcolor' with the color 'newcolor'.  Will be a palette code 0<=p<=255
+		"""
 		for p in self.parts:
 			for m in p[1]:
 				m.replacecolorcode(fromcolor, newcolor)
 		
 	def saveColors(self, filename):
+		"""
+		This function will save a cvr file with the changes done to it's texture(color) data.
+		It works by reading in the old binary file and then it applies the changes made to each voxel.
+		Then it saves the resulting data into either a new or existing cvr file.
+		filename -- the binary output file.
+		"""
 		# First we need to get the original filedata that we are going to modify.
 		with open(self.filename,"rb") as f:
 			CVRfile = bytearray(f.read())
 			logging.info('Opened File')
 		# Then we will modify the data in the bytearray
 		
-		# TODO: Write the code for modifing the values
 		for p in self.parts:
 			for m in p[1]:
 				for v in m.voxels:
@@ -301,6 +314,7 @@ class CVREngine(object):
 						else:
 							output.write(","+"255,  0,242")
 							# TODO: make the user able to choose or what the color for unknown colors will be.
+							
 							logging.warning("Color Code not Known")
 						output.write(",0,0,0") # Normals would be here.. if we knew what they are.
 						output.write("\n")

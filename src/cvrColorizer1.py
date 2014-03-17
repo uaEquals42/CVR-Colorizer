@@ -6,7 +6,6 @@ Created on Mar 6, 2014
 import logging
 import CVR
 import math
-from tkinter import *
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
@@ -134,7 +133,7 @@ class app():
 			zvalue = 0 #z = x
 			z_direction = +1
 			x_direction = -1  # We want the screenspace x value to go the opposite direction
-		canvas_draw.delete(ALL)
+		canvas_draw.delete(tk.ALL)
 		#ok for test purposes lets render from one side first
 		#self.canvas_left.
 		logging.debug(self.CVRfile.filename)
@@ -204,9 +203,9 @@ class app():
 						
 	def __init__(self):
 		self.unknowncolors='#FF00DC'
-		self.root = Tk()
+		self.root = tk.Tk()
 		self.root.title("CVR Colorizer 1.0")
-		self.root.option_add('*tearOff', FALSE)
+		self.root.option_add('*tearOff', tk.FALSE)
 		self.colorhashes={}
 		self.leftcolor=-1
 		self.rightcolor=-1
@@ -216,11 +215,11 @@ class app():
 		
 		
 		# create a toplevel menu
-		menubar = Menu(self.root)
-		menu_file = Menu(menubar)
+		menubar = tk.Menu(self.root)
+		menu_file = tk.Menu(menubar)
 		
-		menu_view = Menu(menubar)
-		menu_options = Menu(menubar)
+		menu_view = tk.Menu(menubar)
+		menu_options = tk.Menu(menubar)
 		menubar.add_cascade(menu=menu_file, label='File')
 		menubar.add_cascade(menu=menu_options, label='Options')
 		menubar.add_cascade(menu=menu_view, label='Views')
@@ -232,12 +231,12 @@ class app():
 		
 		menu_options.add_command(label='Select color for unknown colors', command=lambda: colorchooser.askcolor(initialcolor=self.unknowncolors))
 		
-		str_front = StringVar()
-		str_left = StringVar()
-		str_back = StringVar()
-		str_right = StringVar()
-		str_top = StringVar()
-		str_bottom = StringVar()
+		str_front = tk.StringVar()
+		str_left = tk.StringVar()
+		str_back = tk.StringVar()
+		str_right = tk.StringVar()
+		str_top = tk.StringVar()
+		str_bottom = tk.StringVar()
 		str_left.initialize(1)
 		menu_view.add_checkbutton(label='Front', variable=str_front, onvalue=1, offvalue=0)
 		menu_view.add_checkbutton(label='Left', variable=str_left, onvalue=1, offvalue=0)
@@ -255,32 +254,32 @@ class app():
 		frame_views.grid(column=0, row=0)
 		
 		lf_top = ttk.Labelframe(frame_views, text='Top')
-		self.canvas_top = Canvas(lf_top)
+		self.canvas_top = tk.Canvas(lf_top)
 		self.canvas_top.pack()
 		lf_top.grid(column=0, row=0)
 		
 		lf_left = ttk.Labelframe(frame_views, text='Left')
-		self.canvas_left = Canvas(lf_left)
+		self.canvas_left = tk.Canvas(lf_left)
 		self.canvas_left.pack()
 		lf_left.grid(column=1, row=0)
 		
 		lf_front = ttk.Labelframe(frame_views, text='Front')
-		self.canvas_front = Canvas(lf_front)
+		self.canvas_front = tk.Canvas(lf_front)
 		self.canvas_front.pack()
 		lf_front.grid(column=2, row=0)
 		
 		lf_bottom = ttk.Labelframe(frame_views, text='Bottom')
-		self.canvas_bottom = Canvas(lf_bottom)
+		self.canvas_bottom = tk.Canvas(lf_bottom)
 		self.canvas_bottom.pack()
 		lf_bottom.grid(column=0, row=1)
 		
 		lf_right = ttk.Labelframe(frame_views, text='Right')
-		self.canvas_right = Canvas(lf_right)
+		self.canvas_right = tk.Canvas(lf_right)
 		self.canvas_right.pack()
 		lf_right.grid(column=1, row=1)
 		
 		lf_back = ttk.Labelframe(frame_views, text='Back')
-		self.canvas_back = Canvas(lf_back)
+		self.canvas_back = tk.Canvas(lf_back)
 		self.canvas_back.pack()
 		lf_back.grid(column=2, row=1)
 		
@@ -295,7 +294,7 @@ class app():
 		self.label_current_dispaly.grid(column=1, row=0)
 		button_right.grid(column=2, row=0)
 
-		self.Colorarea = Canvas(self.root, height=9*20+2, width=640 )
+		self.Colorarea = tk.Canvas(self.root, height=9*20+2, width=640 )
 		self.Colorarea.grid(column=0, row=2)
 		# I could also use a canvas to generate the color picker....
 		r = 2
@@ -314,7 +313,7 @@ class app():
 				
 			r = r + 20
 		
-		self.Colorchoise = Canvas(self.root, height=50, width=50 )
+		self.Colorchoise = tk.Canvas(self.root, height=50, width=50 )
 		self.Colorchoise.create_rectangle((17,17,47,47), fill="white")
 		self.Colorchoise.create_rectangle((2,2,32,32), fill="white")
 		

@@ -76,15 +76,19 @@ class app():
 		self.root.quit()
 	
 	def next_mesh(self):
-		self.int_mesh_number = self.int_mesh_number + 1
-		if self.int_mesh_number >= len(self.CVRfile.return_part(self.int_part_number)[1]):
-			self.int_mesh_number = -1
-		self.set_descriptor_text()
-		self.updateviews()
+		if len(self.filename) > 0:
+			self.int_mesh_number = self.int_mesh_number + 1
+			if self.int_mesh_number >= len(self.CVRfile.return_part(self.int_part_number)[1]):
+				self.int_mesh_number = -1
+			self.set_descriptor_text()
+			self.updateviews()
 		
 	def set_descriptor_text(self):
 		pname = self.CVRfile.part_name(self.int_part_number)
-		mname = self.CVRfile.returnMesh(self.int_part_number, self.int_mesh_number).meshname
+		if self.int_mesh_number == -1:
+			mname = "Mesh: All"
+		else:
+			mname = self.CVRfile.returnMesh(self.int_part_number, self.int_mesh_number).meshname
 		self.label_current_dispaly.configure(text=pname+": " + mname)
 		
 	def updateviews(self):
@@ -99,7 +103,7 @@ class app():
 		
 		
 	def drawMesh(self, view, canvas_draw):
-		
+		scale = 1
 		logging.debug("Draw the mesh to canvas")
 		yvalue = 1
 		if view=="top":
@@ -167,17 +171,17 @@ class app():
 		mesh = part[1][self.int_mesh_number]		
 		
 		
-		xcalc = 2*(abs(max_dimensions[2*xvalue])+abs(max_dimensions[2*xvalue+1]))+20
-		ycalc = 2*(abs(max_dimensions[2*yvalue])+abs(max_dimensions[2*yvalue+1]))+20
+		xcalc = scale*(abs(max_dimensions[2*xvalue])+abs(max_dimensions[2*xvalue+1]))+20
+		ycalc = scale*(abs(max_dimensions[2*yvalue])+abs(max_dimensions[2*yvalue+1]))+20
 		canvas_draw.configure(width=xcalc, height=ycalc)
 	
 		
 		if x_direction > 0:
-			x_offset = -2*max_dimensions[2*xvalue]+10  #aka -xmin
+			x_offset = -scale*max_dimensions[2*xvalue]+10  #aka -xmin
 		else:
-			x_offset = 2*max_dimensions[2*xvalue+1]+10
+			x_offset = scale*max_dimensions[2*xvalue+1]+10
 			
-		y_offset = 2*max_dimensions[2*yvalue+1]+10
+		y_offset = scale*max_dimensions[2*yvalue+1]+10
 		
 		#print(x_offset)
 	
@@ -193,8 +197,8 @@ class app():
 		
 		for mesh in meshes:
 			for vox in mesh.voxels:
-				test_x = x_direction*vox.location[xvalue]*2+x_offset
-				test_y = -vox.location[yvalue]*2+y_offset
+				test_x = x_direction*vox.location[xvalue]*scale+x_offset
+				test_y = -vox.location[yvalue]*scale+y_offset
 				
 				if(vox.color < len(self.colorhashes)):
 					color_hash = self.colorhashes[vox.color]
@@ -209,7 +213,7 @@ class app():
 		
 		# now draw it on the canvas
 		for key in dict_display.keys():
-			canvas_draw.create_rectangle(key[0],key[1],key[0]+2,key[1]+2, width=0, fill=dict_display[key][1])
+			canvas_draw.create_rectangle(key[0],key[1],key[0]+scale,key[1]+scale, width=0, fill=dict_display[key][1])
 		
 		
 	def setleftcolor(self,e):	
@@ -282,18 +286,24 @@ class app():
 		self.root.config(menu=menubar)
 		self.root.columnconfigure(0, weight=1)
 		
+		
+		
 		frame_views = ttk.Frame(self.root)
 		frame_views.grid(column=0, row=0)
+		
+	
 		
 		lf_top = ttk.Labelframe(frame_views, text='Top')
 		self.canvas_top = tk.Canvas(lf_top)
 		self.canvas_top.pack()
 		lf_top.grid(column=0, row=0)
 		
+		
+		
 		lf_left = ttk.Labelframe(frame_views, text='Left')
 		self.canvas_left = tk.Canvas(lf_left)
 		self.canvas_left.pack()
-		lf_left.grid(column=1, row=0)
+		lf_left.grid(column=0, row=1)
 		
 		lf_front = ttk.Labelframe(frame_views, text='Front')
 		self.canvas_front = tk.Canvas(lf_front)
@@ -303,7 +313,7 @@ class app():
 		lf_bottom = ttk.Labelframe(frame_views, text='Bottom')
 		self.canvas_bottom = tk.Canvas(lf_bottom)
 		self.canvas_bottom.pack()
-		lf_bottom.grid(column=0, row=1)
+		lf_bottom.grid(column=1, row=0)
 		
 		lf_right = ttk.Labelframe(frame_views, text='Right')
 		self.canvas_right = tk.Canvas(lf_right)
@@ -317,7 +327,7 @@ class app():
 		
 	
 		frame_meshselect = ttk.Frame(self.root)
-		frame_meshselect.grid(column=0, row=1)
+		frame_meshselect.grid(column=0, row=1, rowspan=1)
 		
 		button_left = ttk.Button(frame_meshselect, text='<', command=lambda: print("left"))
 		self.label_current_dispaly = ttk.Label(frame_meshselect, text='?????')

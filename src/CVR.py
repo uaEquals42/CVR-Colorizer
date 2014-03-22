@@ -106,6 +106,11 @@ class Mesh(object):
 		self.voxels = []
 		
 	
+	def paintvoxel(self,location,tocolor):
+		for v in self.voxels:
+			if v.location == location:
+				v.color = tocolor
+	
 	def paletteCodesinUse(self):
 		""" Returns a set of the palette numbers in use for this mesh"""
 		colorcodes = set()
@@ -228,6 +233,15 @@ class CVREngine(object):
 		self.filename = filename
 		self.load(filename)
 		logging.info(len(self.parts))
+	
+	
+	
+	def paintVoxel(self, int_part_num, int_mesh_num, location, to_color):
+		if int_mesh_num == -1:
+			for mesh in self.parts[int_part_num][1]:
+				mesh.paintvoxel(location, to_color)
+		else:
+			self.parts[int_part_num][1][int_mesh_num].paintvoxel(location, to_color)
 	
 	
 	def returnMesh(self, int_part_num, int_mesh_num):

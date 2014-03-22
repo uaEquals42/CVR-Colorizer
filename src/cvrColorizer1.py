@@ -207,13 +207,20 @@ class app():
 				
 				if (test_x,test_y) in dict_display:
 					if dict_display[(test_x,test_y)][0] < z_direction*vox.location[zvalue]:
-						dict_display[(test_x,test_y)] = (vox.location[zvalue],color_hash, vox.location)
+						dict_display[(test_x,test_y)] = (vox.location[zvalue],color_hash, vox.location, self.int_part_number, self.int_mesh_number)
 				else:
-					dict_display[(test_x,test_y)] = (vox.location[zvalue],color_hash, vox.location)
+					dict_display[(test_x,test_y)] = (vox.location[zvalue],color_hash, vox.location, self.int_part_number, self.int_mesh_number)
 		
+				
 		# now draw it on the canvas
 		for key in dict_display.keys():
-			canvas_draw.create_rectangle(key[0],key[1],key[0]+scale,key[1]+scale, width=0, fill=dict_display[key][1])
+			id_num = canvas_draw.create_rectangle(key[0],key[1],key[0]+scale,key[1]+scale, width=0, fill=dict_display[key][1])
+			#canvas_draw.tag_bind(id_num,"<Enter>", lambda e, location=dict_display[key][2], intpart=dict_display[key][3], intmesh=dict_display[key][4] : self.paintleft(e,location, intpart, intmesh) )
+			# this doesn't work as I can't drag the mouse over the time
+		
+	def paintleft(self,event, location, int_partnumber, int_meshnumber):	
+		logging.debug(location)
+		self.CVRfile.paintVoxel(int_partnumber,int_meshnumber,location,self.leftcolor)
 		
 		
 	def setleftcolor(self,e):	

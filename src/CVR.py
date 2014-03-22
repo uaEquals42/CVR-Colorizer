@@ -104,7 +104,7 @@ class Mesh(object):
 		self.meshname = self.meshname + str(Number) 
 		self.currentLocation = startposition
 		self.voxels = []
-		self.currentLocation = [0,0,0]  #x, y, z
+		
 	
 	def paletteCodesinUse(self):
 		""" Returns a set of the palette numbers in use for this mesh"""
@@ -305,6 +305,12 @@ class CVREngine(object):
 			output.write(self.ModelName1+"\n")
 			output.write(self.ModelName2+"\n")
 			output.write(str(self.int_numberofparts)+"\n")
+			count = 0
+			for part in self.parts:
+				for mesh in part[1]:
+					for v in mesh.voxels:
+						count = count + 1
+			output.write(str(count)+"\n")
 			for part in self.parts:
 				output.write("P," + part[0]+"\n")
 				for om in part[1]:

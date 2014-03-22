@@ -52,7 +52,7 @@ class app():
 	
 	def openFile(self):
 		self.int_part_number = 0
-		self.int_mesh_number = 0
+		self.int_mesh_number = -1
 		self.filename = filedialog.askopenfilename(filetypes=(("CVR","*.cvr"),))
 		if(len(self.filename)>0):
 			logging.info(self.filename)
@@ -78,7 +78,7 @@ class app():
 	def next_mesh(self):
 		self.int_mesh_number = self.int_mesh_number + 1
 		if self.int_mesh_number >= len(self.CVRfile.return_part(self.int_part_number)[1]):
-			self.int_mesh_number = 0
+			self.int_mesh_number = -1
 		self.set_descriptor_text()
 		self.updateviews()
 		
@@ -88,16 +88,17 @@ class app():
 		self.label_current_dispaly.configure(text=pname+": " + mname)
 		
 	def updateviews(self):
-		mesh = self.CVRfile.returnMesh(self.int_part_number, self.int_mesh_number)
-		self.drawMesh('left', mesh, self.canvas_left)
-		self.drawMesh('right', mesh, self.canvas_right)
-		self.drawMesh('top', mesh, self.canvas_top)
-		self.drawMesh('bottom', mesh, self.canvas_bottom)
-		self.drawMesh('front', mesh, self.canvas_front)
-		self.drawMesh('back', mesh, self.canvas_back)
 		
 		
-	def drawMesh(self, view, mesh, canvas_draw):
+		self.drawMesh('left', self.canvas_left)
+		self.drawMesh('right', self.canvas_right)
+		self.drawMesh('top', self.canvas_top)
+		self.drawMesh('bottom',  self.canvas_bottom)
+		self.drawMesh('front',  self.canvas_front)
+		self.drawMesh('back',  self.canvas_back)
+		
+		
+	def drawMesh(self, view, canvas_draw):
 		
 		logging.debug("Draw the mesh to canvas")
 		yvalue = 1
@@ -138,42 +139,73 @@ class app():
 		#self.canvas_left.
 		logging.debug(self.CVRfile.filename)
 		
-		logging.debug(mesh.dimensions())
+		part = self.CVRfile.parts[self.int_part_number]
 		#ok lets first see if the viewing area is big enough for the object...
-		xcalc = 2*(abs(mesh.dimensions()[2*xvalue])+abs(mesh.dimensions()[2*xvalue+1]))+20
-		ycalc = 2*(abs(mesh.dimensions()[2*yvalue])+abs(mesh.dimensions()[2*yvalue+1]))+20
+		#lets make it big enough for all the meshes for the current part.
+		max_dimensions = []
+		for tmp_var in part[1][0].dimensions():
+			max_dimensions.append(tmp_var)
+		
+		#print("Start")
+		for mesh2 in part[1]:
+			#print(max_dimensions)
+			#print(mesh2.dimensions())
+			if max_dimensions[0] > mesh2.dimensions()[0]:
+				max_dimensions[0] = mesh2.dimensions()[0]
+			if max_dimensions[1] < mesh2.dimensions()[1]:
+				max_dimensions[1] = mesh2.dimensions()[1]
+			if max_dimensions[2] > mesh2.dimensions()[2]:
+				max_dimensions[2] = mesh2.dimensions()[2]
+			if max_dimensions[3] < mesh2.dimensions()[3]:
+				max_dimensions[3] = mesh2.dimensions()[3]
+			if max_dimensions[4] > mesh2.dimensions()[4]:
+				max_dimensions[4] = mesh2.dimensions()[4]
+			if max_dimensions[5] < mesh2.dimensions()[5]:
+				max_dimensions[5] = mesh2.dimensions()[5]
+			#print(max_dimensions)
+				
+		mesh = part[1][self.int_mesh_number]		
+		
+		
+		xcalc = 2*(abs(max_dimensions[2*xvalue])+abs(max_dimensions[2*xvalue+1]))+20
+		ycalc = 2*(abs(max_dimensions[2*yvalue])+abs(max_dimensions[2*yvalue+1]))+20
 		canvas_draw.configure(width=xcalc, height=ycalc)
 	
 		
 		if x_direction > 0:
-			x_offset = -2*mesh.dimensions()[2*xvalue]+10  #aka -xmin
+			x_offset = -2*max_dimensions[2*xvalue]+10  #aka -xmin
 		else:
-			x_offset = 2*mesh.dimensions()[2*xvalue+1]+10
+			x_offset = 2*max_dimensions[2*xvalue+1]+10
 			
-		y_offset = 2*mesh.dimensions()[2*yvalue+1]+10
+		y_offset = 2*max_dimensions[2*yvalue+1]+10
 		
 		#print(x_offset)
 	
 		# ok, for the view it will be x,y and a z.  Z will be kept track of so that we know if something should be in front
 		# of something else or not.  
 		
-		
+		if self.int_mesh_number != -1:
+			meshes = [mesh]
+		else:
+			meshes = part[1]
 		
 		dict_display = {}  # key is (display_x,display_y)  value is (z, colorhash, (x,y,z))
-		for vox in mesh.voxels:
-			test_x = x_direction*vox.location[xvalue]*2+x_offset
-			test_y = -vox.location[yvalue]*2+y_offset
-			
-			if(vox.color < len(self.colorhashes)):
-				color_hash = self.colorhashes[vox.color]
-			else:
-				color_hash = self.unknowncolors
-			
-			if (test_x,test_y) in dict_display:
-				if dict_display[(test_x,test_y)][0] < z_direction*vox.location[zvalue]:
+		
+		for mesh in meshes:
+			for vox in mesh.voxels:
+				test_x = x_direction*vox.location[xvalue]*2+x_offset
+				test_y = -vox.location[yvalue]*2+y_offset
+				
+				if(vox.color < len(self.colorhashes)):
+					color_hash = self.colorhashes[vox.color]
+				else:
+					color_hash = self.unknowncolors
+				
+				if (test_x,test_y) in dict_display:
+					if dict_display[(test_x,test_y)][0] < z_direction*vox.location[zvalue]:
+						dict_display[(test_x,test_y)] = (vox.location[zvalue],color_hash, vox.location)
+				else:
 					dict_display[(test_x,test_y)] = (vox.location[zvalue],color_hash, vox.location)
-			else:
-				dict_display[(test_x,test_y)] = (vox.location[zvalue],color_hash, vox.location)
 		
 		# now draw it on the canvas
 		for key in dict_display.keys():
@@ -211,7 +243,7 @@ class app():
 		self.rightcolor=-1
 		self.filename=""
 		self.int_part_number = 0
-		self.int_mesh_number = 0
+		self.int_mesh_number = -1
 		
 		
 		# create a toplevel menu

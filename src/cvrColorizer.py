@@ -17,8 +17,159 @@ logging.basicConfig(level=logging.INFO)
 
 class app():
 	
+	def __init__(self):
+		self.unknowncolors='#FF00DC'
+		self.root = tk.Tk()
+		self.root.title("CVR Colorizer 1.0")
+		self.root.option_add('*tearOff', tk.FALSE)
+		self.colorhashes={}
+		self.leftcolor=-1
+		self.rightcolor=-1
+		self.filename=""
+		self.int_part_number = 0
+		self.int_mesh_number = -1
+		self.location_id_lookup = {}
+		self.id_location_lookup = {}
+		self.dict_zoom_level = {}
+		
+		
+		# create a toplevel menu
+		menubar = tk.Menu(self.root)
+		menu_file = tk.Menu(menubar)
+		
+		menu_view = tk.Menu(menubar)
+		menu_options = tk.Menu(menubar)
+		menubar.add_cascade(menu=menu_file, label='File')
+		menubar.add_cascade(menu=menu_options, label='Options')
+		menubar.add_cascade(menu=menu_view, label='Views')
+		
+		menu_file.add_command(label='Open...', command=lambda: self.openFile())
+		menu_file.add_command(label='Save As', command=lambda: self.SaveAsFile())
+		menu_file.add_command(label='Export', command=lambda: self.ExportFile())
+		menu_file.add_command(label='Exit', command=lambda: self.quit())
+		
+		menu_options.add_command(label='Select color for unknown colors', command=lambda: colorchooser.askcolor(initialcolor=self.unknowncolors))
+		
+		str_front = tk.StringVar()
+		str_left = tk.StringVar()
+		str_back = tk.StringVar()
+		str_right = tk.StringVar()
+		str_top = tk.StringVar()
+		str_bottom = tk.StringVar()
+		str_left.initialize(1)
+		menu_view.add_checkbutton(label='Front', variable=str_front, onvalue=1, offvalue=0)
+		menu_view.add_checkbutton(label='Left', variable=str_left, onvalue=1, offvalue=0)
+		menu_view.add_checkbutton(label='Back', variable=str_back, onvalue=1, offvalue=0)
+		menu_view.add_checkbutton(label='Right', variable=str_right, onvalue=1, offvalue=0)
+		menu_view.add_checkbutton(label='Top', variable=str_top, onvalue=1, offvalue=0)
+		menu_view.add_checkbutton(label='Bottom', variable=str_bottom, onvalue=1, offvalue=0)
+		
+	
+		# display the menu
+		self.root.config(menu=menubar)
+		self.root.columnconfigure(0, weight=1)
+		
+		
+		
+		frame_views = ttk.Frame(self.root)
+		frame_views.grid(column=0, row=0)
+		
+	
+		
+		lf_top = ttk.Labelframe(frame_views, text='Top')
+		self.canvas_top = tk.Canvas(lf_top)
+		self.canvas_top.pack()
+		lf_top.grid(column=0, row=0)
+		self.canvas_top.bind("<B1-Motion>", lambda e: self.paintleft(e,self.canvas_top,"top"))
+		self.canvas_top.bind("<Button-1>", lambda e: self.paintleft(e,self.canvas_top,"top"))
+		self.canvas_top.bind("<Button-2>", lambda e: self.ChangeZoomLevel(self.canvas_top, "top"))
+		
+		lf_left = ttk.Labelframe(frame_views, text='Left')
+		self.canvas_left = tk.Canvas(lf_left)
+		self.canvas_left.pack()
+		lf_left.grid(column=0, row=1)
+		self.canvas_left.bind("<B1-Motion>", lambda e: self.paintleft(e,self.canvas_left,"left"))
+		self.canvas_left.bind("<Button-1>", lambda e: self.paintleft(e,self.canvas_left,"left"))
+		self.canvas_left.bind("<Button-2>", lambda e: self.ChangeZoomLevel(self.canvas_left, "left"))
+		
+		lf_front = ttk.Labelframe(frame_views, text='Front')
+		self.canvas_front = tk.Canvas(lf_front)
+		self.canvas_front.pack()
+		lf_front.grid(column=2, row=0)
+		self.canvas_front.bind("<B1-Motion>", lambda e: self.paintleft(e,self.canvas_front,"front"))
+		self.canvas_front.bind("<Button-1>", lambda e: self.paintleft(e,self.canvas_front,"front"))
+		self.canvas_front.bind("<Button-2>", lambda e: self.ChangeZoomLevel(self.canvas_front, "front"))
+		
+		lf_bottom = ttk.Labelframe(frame_views, text='Bottom')
+		self.canvas_bottom = tk.Canvas(lf_bottom)
+		self.canvas_bottom.pack()
+		lf_bottom.grid(column=1, row=0)
+		self.canvas_bottom.bind("<B1-Motion>", lambda e: self.paintleft(e,self.canvas_bottom,"bottom"))
+		self.canvas_bottom.bind("<Button-1>", lambda e: self.paintleft(e,self.canvas_bottom,"bottom"))
+		self.canvas_bottom.bind("<Button-2>", lambda e: self.ChangeZoomLevel(self.canvas_bottom, "bottom"))
+		
+		lf_right = ttk.Labelframe(frame_views, text='Right')
+		self.canvas_right = tk.Canvas(lf_right)
+		self.canvas_right.pack()
+		lf_right.grid(column=1, row=1)
+		self.canvas_right.bind("<B1-Motion>", lambda e: self.paintleft(e,self.canvas_right,"right"))
+		self.canvas_right.bind("<Button-1>", lambda e: self.paintleft(e,self.canvas_right,"right"))
+		self.canvas_right.bind("<Button-2>", lambda e: self.ChangeZoomLevel(self.canvas_right, "right"))
+		
+		lf_back = ttk.Labelframe(frame_views, text='Back')
+		self.canvas_back = tk.Canvas(lf_back)
+		self.canvas_back.pack()
+		lf_back.grid(column=2, row=1)
+		self.canvas_back.bind("<B1-Motion>", lambda e: self.paintleft(e,self.canvas_back,"back"))
+		self.canvas_back.bind("<Button-1>", lambda e: self.paintleft(e,self.canvas_back,"back"))
+		self.canvas_back.bind("<Button-2>", lambda e: self.ChangeZoomLevel(self.canvas_back, "back"))
+		
+	
+		frame_meshselect = ttk.Frame(self.root)
+		frame_meshselect.grid(column=0, row=1, rowspan=1)
+		
+		button_left = ttk.Button(frame_meshselect, text='<', command=lambda: print("left"))
+		self.label_current_dispaly = ttk.Label(frame_meshselect, text='?????')
+		button_right = ttk.Button(frame_meshselect, text='>', command=lambda: self.next_mesh())
+		button_left.grid(column=0, row=0)
+		self.label_current_dispaly.grid(column=1, row=0)
+		button_right.grid(column=2, row=0)
+
+		self.Colorarea = tk.Canvas(self.root, height=9*20+2, width=640 )
+		self.Colorarea.grid(column=0, row=2)
+		# I could also use a canvas to generate the color picker....
+		r = 2
+		column2 = 0
+		
+		
+		while r <= 8*20:
+			column2 = 0			
+			while column2 < 32:
+				bleh = self.Colorarea.create_rectangle((column2*20, r, column2*20+20, r+20), outline='black', fill="white")
+				
+				self.Colorarea.tag_bind(bleh, "<Button-1>", lambda e: self.setleftcolor(e))
+				self.Colorarea.tag_bind(bleh, "<Button-3>", lambda e: self.setrightcolor(e))
+				
+				column2 = column2 + 1
+				
+			r = r + 20
+		
+		self.Colorchoise = tk.Canvas(self.root, height=50, width=50 )
+		self.Colorchoise.create_rectangle((17,17,47,47), fill="white")
+		self.Colorchoise.create_rectangle((2,2,32,32), fill="white")
+		
+		self.Colorchoise.grid(column=0, row=3)
+		
+		
+		self.root.mainloop()	
 	
 	
+	def ChangeZoomLevel(self, canvas, view):
+		if self.dict_zoom_level[view] == 1:
+			self.dict_zoom_level[view] = 2
+		else:
+			self.dict_zoom_level[view] = 1
+		self.drawMesh(view, canvas)
 	
 	def makestringlonger(self, s, length):
 		while(len(s)<length):
@@ -60,6 +211,12 @@ class app():
 			
 			self.CVRfile = CVR.CVREngine(self.filename)
 			self.setPaletteColors()
+			self.dict_zoom_level["left"] = 1
+			self.dict_zoom_level["right"] = 1
+			self.dict_zoom_level["top"] = 1
+			self.dict_zoom_level["bottom"] = 1
+			self.dict_zoom_level["front"] = 1
+			self.dict_zoom_level["back"] = 1
 			self.create_views()
 		
 	def SaveAsFile(self):
@@ -105,7 +262,7 @@ class app():
 		
 	def drawMesh(self, view, canvas_draw):
 
-		scale = 1
+		scale = self.dict_zoom_level[view]
 		logging.debug("Draw the mesh to canvas")
 		yvalue = 1
 		if view=="top":
@@ -247,7 +404,7 @@ class app():
 		if self.leftcolor >= 0 and self.leftcolor < 256:
 			logging.debug(str(event.x) + ","+  str(event.y))
 			try:
-				pixel_id = canvas.find_enclosed(event.x, event.y, event.x+1, event.y+1)[0]
+				pixel_id = canvas.find_overlapping(event.x, event.y, event.x+1, event.y+1)[0]
 			except:
 				pixel_id = -1
 			if pixel_id != -1:
@@ -279,144 +436,7 @@ class app():
 			else:
 				self.Colorchoise.itemconfigure(1, fill=self.unknowncolors)
 						
-	def __init__(self):
-		self.unknowncolors='#FF00DC'
-		self.root = tk.Tk()
-		self.root.title("CVR Colorizer 1.0")
-		self.root.option_add('*tearOff', tk.FALSE)
-		self.colorhashes={}
-		self.leftcolor=-1
-		self.rightcolor=-1
-		self.filename=""
-		self.int_part_number = 0
-		self.int_mesh_number = -1
-		self.location_id_lookup = {}
-		self.id_location_lookup = {}
-		
-		
-		# create a toplevel menu
-		menubar = tk.Menu(self.root)
-		menu_file = tk.Menu(menubar)
-		
-		menu_view = tk.Menu(menubar)
-		menu_options = tk.Menu(menubar)
-		menubar.add_cascade(menu=menu_file, label='File')
-		menubar.add_cascade(menu=menu_options, label='Options')
-		menubar.add_cascade(menu=menu_view, label='Views')
-		
-		menu_file.add_command(label='Open...', command=lambda: self.openFile())
-		menu_file.add_command(label='Save As', command=lambda: self.SaveAsFile())
-		menu_file.add_command(label='Export', command=lambda: self.ExportFile())
-		menu_file.add_command(label='Exit', command=lambda: self.quit())
-		
-		menu_options.add_command(label='Select color for unknown colors', command=lambda: colorchooser.askcolor(initialcolor=self.unknowncolors))
-		
-		str_front = tk.StringVar()
-		str_left = tk.StringVar()
-		str_back = tk.StringVar()
-		str_right = tk.StringVar()
-		str_top = tk.StringVar()
-		str_bottom = tk.StringVar()
-		str_left.initialize(1)
-		menu_view.add_checkbutton(label='Front', variable=str_front, onvalue=1, offvalue=0)
-		menu_view.add_checkbutton(label='Left', variable=str_left, onvalue=1, offvalue=0)
-		menu_view.add_checkbutton(label='Back', variable=str_back, onvalue=1, offvalue=0)
-		menu_view.add_checkbutton(label='Right', variable=str_right, onvalue=1, offvalue=0)
-		menu_view.add_checkbutton(label='Top', variable=str_top, onvalue=1, offvalue=0)
-		menu_view.add_checkbutton(label='Bottom', variable=str_bottom, onvalue=1, offvalue=0)
-		
-	
-		# display the menu
-		self.root.config(menu=menubar)
-		self.root.columnconfigure(0, weight=1)
-		
-		
-		
-		frame_views = ttk.Frame(self.root)
-		frame_views.grid(column=0, row=0)
-		
-	
-		
-		lf_top = ttk.Labelframe(frame_views, text='Top')
-		self.canvas_top = tk.Canvas(lf_top)
-		self.canvas_top.pack()
-		lf_top.grid(column=0, row=0)
-		self.canvas_top.bind("<B1-Motion>", lambda e: self.paintleft(e,self.canvas_top,"top"))
-		self.canvas_top.bind("<Button-1>", lambda e: self.paintleft(e,self.canvas_top,"top"))
-		
-		lf_left = ttk.Labelframe(frame_views, text='Left')
-		self.canvas_left = tk.Canvas(lf_left)
-		self.canvas_left.pack()
-		lf_left.grid(column=0, row=1)
-		self.canvas_left.bind("<B1-Motion>", lambda e: self.paintleft(e,self.canvas_left,"left"))
-		self.canvas_left.bind("<Button-1>", lambda e: self.paintleft(e,self.canvas_left,"left"))
-		
-		lf_front = ttk.Labelframe(frame_views, text='Front')
-		self.canvas_front = tk.Canvas(lf_front)
-		self.canvas_front.pack()
-		lf_front.grid(column=2, row=0)
-		self.canvas_front.bind("<B1-Motion>", lambda e: self.paintleft(e,self.canvas_front,"front"))
-		self.canvas_front.bind("<Button-1>", lambda e: self.paintleft(e,self.canvas_front,"front"))
-		
-		lf_bottom = ttk.Labelframe(frame_views, text='Bottom')
-		self.canvas_bottom = tk.Canvas(lf_bottom)
-		self.canvas_bottom.pack()
-		lf_bottom.grid(column=1, row=0)
-		self.canvas_bottom.bind("<B1-Motion>", lambda e: self.paintleft(e,self.canvas_bottom,"bottom"))
-		self.canvas_bottom.bind("<Button-1>", lambda e: self.paintleft(e,self.canvas_bottom,"bottom"))
-		
-		lf_right = ttk.Labelframe(frame_views, text='Right')
-		self.canvas_right = tk.Canvas(lf_right)
-		self.canvas_right.pack()
-		lf_right.grid(column=1, row=1)
-		self.canvas_right.bind("<B1-Motion>", lambda e: self.paintleft(e,self.canvas_right,"right"))
-		self.canvas_right.bind("<Button-1>", lambda e: self.paintleft(e,self.canvas_right,"right"))
-		
-		lf_back = ttk.Labelframe(frame_views, text='Back')
-		self.canvas_back = tk.Canvas(lf_back)
-		self.canvas_back.pack()
-		lf_back.grid(column=2, row=1)
-		self.canvas_back.bind("<B1-Motion>", lambda e: self.paintleft(e,self.canvas_back,"back"))
-		self.canvas_back.bind("<Button-1>", lambda e: self.paintleft(e,self.canvas_back,"back"))
-		
-	
-		frame_meshselect = ttk.Frame(self.root)
-		frame_meshselect.grid(column=0, row=1, rowspan=1)
-		
-		button_left = ttk.Button(frame_meshselect, text='<', command=lambda: print("left"))
-		self.label_current_dispaly = ttk.Label(frame_meshselect, text='?????')
-		button_right = ttk.Button(frame_meshselect, text='>', command=lambda: self.next_mesh())
-		button_left.grid(column=0, row=0)
-		self.label_current_dispaly.grid(column=1, row=0)
-		button_right.grid(column=2, row=0)
 
-		self.Colorarea = tk.Canvas(self.root, height=9*20+2, width=640 )
-		self.Colorarea.grid(column=0, row=2)
-		# I could also use a canvas to generate the color picker....
-		r = 2
-		column2 = 0
-		
-		
-		while r <= 8*20:
-			column2 = 0			
-			while column2 < 32:
-				bleh = self.Colorarea.create_rectangle((column2*20, r, column2*20+20, r+20), outline='black', fill="white")
-				
-				self.Colorarea.tag_bind(bleh, "<Button-1>", lambda e: self.setleftcolor(e))
-				self.Colorarea.tag_bind(bleh, "<Button-3>", lambda e: self.setrightcolor(e))
-				
-				column2 = column2 + 1
-				
-			r = r + 20
-		
-		self.Colorchoise = tk.Canvas(self.root, height=50, width=50 )
-		self.Colorchoise.create_rectangle((17,17,47,47), fill="white")
-		self.Colorchoise.create_rectangle((2,2,32,32), fill="white")
-		
-		self.Colorchoise.grid(column=0, row=3)
-		
-		
-		self.root.mainloop()
 
 	
 app()

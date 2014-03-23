@@ -10,13 +10,14 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import colorchooser
+from time import time
 
 
 logging.basicConfig(level=logging.INFO)		
 
 class app():
 	
-
+	
 	
 	
 	def makestringlonger(self, s, length):
@@ -59,7 +60,7 @@ class app():
 			
 			self.CVRfile = CVR.CVREngine(self.filename)
 			self.setPaletteColors()
-			self.updateviews()
+			self.create_views()
 		
 	def SaveAsFile(self):
 		filename = filedialog.asksaveasfilename(filetypes=(("CVR","*.cvr"),))
@@ -81,7 +82,7 @@ class app():
 			if self.int_mesh_number >= len(self.CVRfile.return_part(self.int_part_number)[1]):
 				self.int_mesh_number = -1
 			self.set_descriptor_text()
-			self.updateviews()
+			self.create_views()
 		
 	def set_descriptor_text(self):
 		pname = self.CVRfile.part_name(self.int_part_number)
@@ -91,7 +92,7 @@ class app():
 			mname = self.CVRfile.returnMesh(self.int_part_number, self.int_mesh_number).meshname
 		self.label_current_dispaly.configure(text=pname+": " + mname)
 		
-	def updateviews(self):
+	def create_views(self):
 		
 		
 		self.drawMesh('left', self.canvas_left)
@@ -103,6 +104,7 @@ class app():
 		
 		
 	def drawMesh(self, view, canvas_draw):
+
 		scale = 1
 		logging.debug("Draw the mesh to canvas")
 		yvalue = 1
@@ -139,6 +141,7 @@ class app():
 			z_direction = +1
 			x_direction = -1  # We want the screenspace x value to go the opposite direction
 		canvas_draw.delete(tk.ALL)
+
 		#ok for test purposes lets render from one side first
 		#self.canvas_left.
 		logging.debug(self.CVRfile.filename)
@@ -149,7 +152,7 @@ class app():
 		max_dimensions = []
 		for tmp_var in part[1][0].dimensions():
 			max_dimensions.append(tmp_var)
-		
+	
 		#print("Start")
 		for mesh2 in part[1]:
 			#print(max_dimensions)
@@ -169,7 +172,7 @@ class app():
 			#print(max_dimensions)
 				
 		mesh = part[1][self.int_mesh_number]		
-		
+	
 		
 		xcalc = scale*(abs(max_dimensions[2*xvalue])+abs(max_dimensions[2*xvalue+1]))+20
 		ycalc = scale*(abs(max_dimensions[2*yvalue])+abs(max_dimensions[2*yvalue+1]))+20
@@ -194,7 +197,7 @@ class app():
 			meshes = part[1]
 		
 		dict_display = {}  # key is (display_x,display_y)  value is (z, colorhash, (x,y,z))
-		
+	
 		for mesh in meshes:
 			for vox in mesh.voxels:
 				test_x = x_direction*vox.location[xvalue]*scale+x_offset
@@ -207,21 +210,53 @@ class app():
 				
 				if (test_x,test_y) in dict_display:
 					if dict_display[(test_x,test_y)][0] < z_direction*vox.location[zvalue]:
-						dict_display[(test_x,test_y)] = (vox.location[zvalue],color_hash, vox.location, self.int_part_number, self.int_mesh_number)
+						dict_display[(test_x,test_y)] = (vox.location[zvalue],color_hash, vox.location)
 				else:
-					dict_display[(test_x,test_y)] = (vox.location[zvalue],color_hash, vox.location, self.int_part_number, self.int_mesh_number)
+					dict_display[(test_x,test_y)] = (vox.location[zvalue],color_hash, vox.location)
 		
-				
+		loc_id_lookup = {}
+		id_location_lookup = {}
 		# now draw it on the canvas
 		for key in dict_display.keys():
-			canvas_draw.create_rectangle(key[0],key[1],key[0]+scale,key[1]+scale, width=0, fill=dict_display[key][1])
+			item_id = canvas_draw.create_rectangle(key[0],key[1],key[0]+scale,key[1]+scale, width=0, fill=dict_display[key][1])
 			#canvas_draw.tag_bind(id_num,"<Enter>", lambda e, location=dict_display[key][2], intpart=dict_display[key][3], intmesh=dict_display[key][4] : self.paintleft(e,location, intpart, intmesh) )
 			# this doesn't work as I can't drag the mouse over the time
+			loc_id_lookup[dict_display[key][2]] = item_id
+			id_location_lookup[item_id] = dict_display[key][2]
+		self.location_id_lookup[view] = loc_id_lookup
+		self.id_location_lookup[view] = id_location_lookup
+	
+	def updateView(self, view, location, canvas, color):
+		if location in self.location_id_lookup[view]:
+			if color in self.colorhashes:
+				canvas.itemconfigure(self.location_id_lookup[view][location], fill=self.colorhashes[color])
+			else:
+				canvas.itemconfigure(self.location_id_lookup[view][location], fill=self.unknowncolors)
+
 		
-	def paintleft(self,event, location, int_partnumber, int_meshnumber):	
-		logging.debug(location)
-		self.CVRfile.paintVoxel(int_partnumber,int_meshnumber,location,self.leftcolor)
-		
+	
+	def refreshViews(self, location, color):
+		self.updateView("top", location, self.canvas_top, color)
+		self.updateView("bottom", location, self.canvas_bottom, color)
+		self.updateView("right", location, self.canvas_right, color)
+		self.updateView("left", location, self.canvas_left, color)
+		self.updateView("back", location, self.canvas_back, color)
+		self.updateView("front", location, self.canvas_front, color)
+			
+	def paintleft(self,event, canvas,view):	
+		if self.leftcolor >= 0 and self.leftcolor < 256:
+			logging.debug(str(event.x) + ","+  str(event.y))
+			try:
+				pixel_id = canvas.find_enclosed(event.x, event.y, event.x+1, event.y+1)[0]
+			except:
+				pixel_id = -1
+			if pixel_id != -1:
+				#print(pixel_id) 
+				location = self.id_location_lookup[view][pixel_id]
+				logging.debug("Paint Location:" + str(location))
+				self.CVRfile.paintVoxel(self.int_part_number,self.int_mesh_number,location,self.leftcolor)
+				self.refreshViews(location, self.leftcolor)
+	
 		
 	def setleftcolor(self,e):	
 		if(len(self.filename)>0):
@@ -255,6 +290,8 @@ class app():
 		self.filename=""
 		self.int_part_number = 0
 		self.int_mesh_number = -1
+		self.location_id_lookup = {}
+		self.id_location_lookup = {}
 		
 		
 		# create a toplevel menu
@@ -304,33 +341,43 @@ class app():
 		self.canvas_top = tk.Canvas(lf_top)
 		self.canvas_top.pack()
 		lf_top.grid(column=0, row=0)
-		
-		
+		self.canvas_top.bind("<B1-Motion>", lambda e: self.paintleft(e,self.canvas_top,"top"))
+		self.canvas_top.bind("<Button-1>", lambda e: self.paintleft(e,self.canvas_top,"top"))
 		
 		lf_left = ttk.Labelframe(frame_views, text='Left')
 		self.canvas_left = tk.Canvas(lf_left)
 		self.canvas_left.pack()
 		lf_left.grid(column=0, row=1)
+		self.canvas_left.bind("<B1-Motion>", lambda e: self.paintleft(e,self.canvas_left,"left"))
+		self.canvas_left.bind("<Button-1>", lambda e: self.paintleft(e,self.canvas_left,"left"))
 		
 		lf_front = ttk.Labelframe(frame_views, text='Front')
 		self.canvas_front = tk.Canvas(lf_front)
 		self.canvas_front.pack()
 		lf_front.grid(column=2, row=0)
+		self.canvas_front.bind("<B1-Motion>", lambda e: self.paintleft(e,self.canvas_front,"front"))
+		self.canvas_front.bind("<Button-1>", lambda e: self.paintleft(e,self.canvas_front,"front"))
 		
 		lf_bottom = ttk.Labelframe(frame_views, text='Bottom')
 		self.canvas_bottom = tk.Canvas(lf_bottom)
 		self.canvas_bottom.pack()
 		lf_bottom.grid(column=1, row=0)
+		self.canvas_bottom.bind("<B1-Motion>", lambda e: self.paintleft(e,self.canvas_bottom,"bottom"))
+		self.canvas_bottom.bind("<Button-1>", lambda e: self.paintleft(e,self.canvas_bottom,"bottom"))
 		
 		lf_right = ttk.Labelframe(frame_views, text='Right')
 		self.canvas_right = tk.Canvas(lf_right)
 		self.canvas_right.pack()
 		lf_right.grid(column=1, row=1)
+		self.canvas_right.bind("<B1-Motion>", lambda e: self.paintleft(e,self.canvas_right,"right"))
+		self.canvas_right.bind("<Button-1>", lambda e: self.paintleft(e,self.canvas_right,"right"))
 		
 		lf_back = ttk.Labelframe(frame_views, text='Back')
 		self.canvas_back = tk.Canvas(lf_back)
 		self.canvas_back.pack()
 		lf_back.grid(column=2, row=1)
+		self.canvas_back.bind("<B1-Motion>", lambda e: self.paintleft(e,self.canvas_back,"back"))
+		self.canvas_back.bind("<Button-1>", lambda e: self.paintleft(e,self.canvas_back,"back"))
 		
 	
 		frame_meshselect = ttk.Frame(self.root)

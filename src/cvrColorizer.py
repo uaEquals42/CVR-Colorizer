@@ -66,7 +66,7 @@ class app():
 		menu_file.add_command(label='Export', command=lambda: self.ExportFile())
 		menu_file.add_command(label='Exit', command=lambda: self.quit())
 		
-		menu_options.add_command(label='Select color for unknown colors', command=lambda: colorchooser.askcolor(initialcolor=self.unknowncolors))
+		menu_options.add_command(label='Select color for unknown colors', command=lambda: self.setUknownColors())
 		
 
 		
@@ -181,7 +181,12 @@ class app():
 		
 		self.root.mainloop()	
 	
-	
+	def setUknownColors(self):
+		self.unknowncolors = colorchooser.askcolor(initialcolor=self.unknowncolors)[1]
+		if len(self.filename)!=0:
+			self.setPaletteColors()
+			self.create_views()
+		
 	def ChangeZoomLevel(self, canvas, view):
 		if self.dict_zoom_level[view] == 1:
 			self.dict_zoom_level[view] = 2
@@ -200,24 +205,25 @@ class app():
 		"""
 		Goes through the squares on the canvas and assigns them their colors.
 		"""
-		i = 0
-		while i < len(self.CVRfile.dict_colors):
-			r = hex(int(self.CVRfile.dict_colors[i].split(",")[0]))[2:]
-			g = hex(int(self.CVRfile.dict_colors[i].split(",")[1]))[2:]
-			b = hex(int(self.CVRfile.dict_colors[i].split(",")[2]))[2:]
-			r = self.makestringlonger(r, 2)
-			g = self.makestringlonger(g, 2)
-			b = self.makestringlonger(b, 2)
-			
-			
-			fillcolor = "#"+r+g+b
-			self.colorhashes[i] = fillcolor
-			self.Colorarea.itemconfig(i+1, fill=fillcolor) 
-			i = i + 1
-		while i <= 256:
-			self.Colorarea.itemconfig(i+1, fill=self.unknowncolors) 
-			
-			i = i + 1
+		if len(self.filename)!=0:
+			i = 0
+			while i < len(self.CVRfile.dict_colors):
+				r = hex(int(self.CVRfile.dict_colors[i].split(",")[0]))[2:]
+				g = hex(int(self.CVRfile.dict_colors[i].split(",")[1]))[2:]
+				b = hex(int(self.CVRfile.dict_colors[i].split(",")[2]))[2:]
+				r = self.makestringlonger(r, 2)
+				g = self.makestringlonger(g, 2)
+				b = self.makestringlonger(b, 2)
+				
+				
+				fillcolor = "#"+r+g+b
+				self.colorhashes[i] = fillcolor
+				self.Colorarea.itemconfig(i+1, fill=fillcolor) 
+				i = i + 1
+			while i <= 256:
+				self.Colorarea.itemconfig(i+1, fill=self.unknowncolors) 
+				
+				i = i + 1
 		
 	
 	def openFile(self):

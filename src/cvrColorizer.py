@@ -37,11 +37,11 @@ class app():
 		menubar = tk.Menu(self.root)
 		menu_file = tk.Menu(menubar)
 		
-		menu_view = tk.Menu(menubar)
+
 		menu_options = tk.Menu(menubar)
 		menubar.add_cascade(menu=menu_file, label='File')
 		menubar.add_cascade(menu=menu_options, label='Options')
-		menubar.add_cascade(menu=menu_view, label='Views')
+	
 		
 		menu_file.add_command(label='Open...', command=lambda: self.openFile())
 		menu_file.add_command(label='Save As', command=lambda: self.SaveAsFile())
@@ -50,19 +50,7 @@ class app():
 		
 		menu_options.add_command(label='Select color for unknown colors', command=lambda: colorchooser.askcolor(initialcolor=self.unknowncolors))
 		
-		str_front = tk.StringVar()
-		str_left = tk.StringVar()
-		str_back = tk.StringVar()
-		str_right = tk.StringVar()
-		str_top = tk.StringVar()
-		str_bottom = tk.StringVar()
-		str_left.initialize(1)
-		menu_view.add_checkbutton(label='Front', variable=str_front, onvalue=1, offvalue=0)
-		menu_view.add_checkbutton(label='Left', variable=str_left, onvalue=1, offvalue=0)
-		menu_view.add_checkbutton(label='Back', variable=str_back, onvalue=1, offvalue=0)
-		menu_view.add_checkbutton(label='Right', variable=str_right, onvalue=1, offvalue=0)
-		menu_view.add_checkbutton(label='Top', variable=str_top, onvalue=1, offvalue=0)
-		menu_view.add_checkbutton(label='Bottom', variable=str_bottom, onvalue=1, offvalue=0)
+
 		
 	
 		# display the menu

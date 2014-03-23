@@ -230,6 +230,11 @@ class app():
 			self.dict_zoom_level["front"] = 1
 			self.dict_zoom_level["back"] = 1
 			self.create_views()
+			
+			self.leftcolor=-1
+			self.rightcolor=-1
+			self.Colorchoise.itemconfig(1, fill="white")
+			self.Colorchoise.itemconfig(2, fill="white")
 		
 	def SaveAsFile(self):
 		filename = filedialog.asksaveasfilename(filetypes=(("CVR","*.cvr"),))
@@ -379,9 +384,9 @@ class app():
 				
 				if (test_x,test_y) in dict_display:
 					if dict_display[(test_x,test_y)][0] < z_direction*vox.location[zvalue]:
-						dict_display[(test_x,test_y)] = (vox.location[zvalue],color_hash, vox.location)
+						dict_display[(test_x,test_y)] = (z_direction*vox.location[zvalue],color_hash, vox.location)
 				else:
-					dict_display[(test_x,test_y)] = (vox.location[zvalue],color_hash, vox.location)
+					dict_display[(test_x,test_y)] = (z_direction*vox.location[zvalue],color_hash, vox.location)
 		
 		loc_id_lookup = {}
 		id_location_lookup = {}

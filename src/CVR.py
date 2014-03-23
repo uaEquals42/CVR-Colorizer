@@ -137,7 +137,7 @@ class Mesh(object):
 	def dimensions(self):
 		
 		if self.__dimensions == None:
-			logging.info("Calculate dimensions")
+			logging.debug("Calculate dimensions")
 			xmin = self.voxels[0].location[0]
 			xmax = self.voxels[0].location[0]
 			ymin = self.voxels[0].location[1]
@@ -237,6 +237,14 @@ class CVREngine(object):
 	
 	
 	def paintVoxel(self, int_part_num, int_mesh_num, location, to_color):
+		"""
+		Changes all voxels at the given location to the color to_color using the color palette code.
+		if int_mesh_num is -1, then it will do so for all sub meshes at the given point.
+		else it will only try to find the voxels for the specified mesh.
+		to_color needs to be between 0 and 255.
+		"""
+		#TODO: add a check for to_color
+		#TODO: add a sanity check for int_part_num and int_mesh_num
 		if int_mesh_num == -1:
 			for mesh in self.parts[int_part_num][1]:
 				mesh.paintvoxel(location, to_color)
@@ -345,6 +353,10 @@ class CVREngine(object):
 				
 		
 	def load(self, filename):
+		"""
+		This function loads the file filename into memory.
+		Basically, it reads in the bytedata, examines it and then puts the meshes into an array of parts.
+		"""
 		with open(filename,"rb") as f:
 			CVRfile = bytearray(f.read())
 			logging.info('Opened File')
@@ -410,7 +422,7 @@ class CVREngine(object):
 			colorcount+=1
 			pos+=3
 			
-		# TODO: Have someone figure out where the other palette color codes are stored.
+		# TODO: Have someone figure out where the rest of the palette color codes are stored.
 		
 		
 		# Then there is a bunch of stuff I don't know what it does.... O.o

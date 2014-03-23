@@ -131,7 +131,7 @@ class app():
 		if view=="back":
 			xvalue = 2 
 			zvalue = 0 
-			z_direction = +1
+			z_direction = -1
 			x_direction = +1
 		if view=="front":
 			xvalue = 2 # use z for the screenspace x value
@@ -214,7 +214,7 @@ class app():
 				
 		# now draw it on the canvas
 		for key in dict_display.keys():
-			id_num = canvas_draw.create_rectangle(key[0],key[1],key[0]+scale,key[1]+scale, width=0, fill=dict_display[key][1])
+			canvas_draw.create_rectangle(key[0],key[1],key[0]+scale,key[1]+scale, width=0, fill=dict_display[key][1])
 			#canvas_draw.tag_bind(id_num,"<Enter>", lambda e, location=dict_display[key][2], intpart=dict_display[key][3], intmesh=dict_display[key][4] : self.paintleft(e,location, intpart, intmesh) )
 			# this doesn't work as I can't drag the mouse over the time
 		

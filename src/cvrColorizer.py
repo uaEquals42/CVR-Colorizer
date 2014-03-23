@@ -10,7 +10,9 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import colorchooser
-from time import time
+from tkinter import messagebox
+
+
 
 
 logging.basicConfig(level=logging.INFO)		
@@ -203,26 +205,31 @@ class app():
 		
 	
 	def openFile(self):
+		
 		self.int_part_number = 0
 		self.int_mesh_number = -1
 		self.filename = filedialog.askopenfilename(filetypes=(("CVR","*.cvr"),))
 		if(len(self.filename)>0):
 			logging.info(self.filename)
+			try:
+				self.CVRfile = CVR.CVREngine(self.filename)
+				self.setPaletteColors()
+				self.dict_zoom_level["left"] = 1
+				self.dict_zoom_level["right"] = 1
+				self.dict_zoom_level["top"] = 1
+				self.dict_zoom_level["bottom"] = 1
+				self.dict_zoom_level["front"] = 1
+				self.dict_zoom_level["back"] = 1
+				self.create_views()
+				
+				self.leftcolor=-1
+				self.rightcolor=-1
+				self.Colorchoise.itemconfig(1, fill="white")
+				self.Colorchoise.itemconfig(2, fill="white")
+			except:
+				messagebox.showinfo(message='Error: Failed to open file')
+				self.quit()
 			
-			self.CVRfile = CVR.CVREngine(self.filename)
-			self.setPaletteColors()
-			self.dict_zoom_level["left"] = 1
-			self.dict_zoom_level["right"] = 1
-			self.dict_zoom_level["top"] = 1
-			self.dict_zoom_level["bottom"] = 1
-			self.dict_zoom_level["front"] = 1
-			self.dict_zoom_level["back"] = 1
-			self.create_views()
-			
-			self.leftcolor=-1
-			self.rightcolor=-1
-			self.Colorchoise.itemconfig(1, fill="white")
-			self.Colorchoise.itemconfig(2, fill="white")
 		
 	def SaveAsFile(self):
 		filename = filedialog.asksaveasfilename(filetypes=(("CVR","*.cvr"),))

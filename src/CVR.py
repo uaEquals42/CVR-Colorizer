@@ -416,6 +416,7 @@ class CVREngine(object):
 		# It isn't getting the right colors when it is # 145 or higher
 		inttmp = pos + 3*(245-CVRfile[pos-1]-1)  #it won't be reading in the right values for 155-x... yeah.
 		colorcount = 0;
+		#TODO: I think this might be where it is adding one color to many sometimes.... I'm gonna have to pin it down sometime.
 		while pos <= inttmp:
 			self.dict_colors[colorcount] = str(CVRfile[pos]) + "," + str(CVRfile[pos+1]) +"," + str(CVRfile[pos+2])
 			logging.debug("Color " + str(colorcount)+ ": " + self.dict_colors[colorcount] + ": "  + colorname((CVRfile[pos], CVRfile[pos+1], CVRfile[pos+2])))	

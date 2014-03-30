@@ -107,7 +107,8 @@ class VoxelPoint(object):
 		self.norm1 = norm1
 		self.norm2 = norm2
 		
-		
+
+
 
 class Mesh(object):
 	""" Contains a list of voxels and other details """
@@ -236,7 +237,11 @@ class CVREngine(object):
 		self.dict_directions['11010'] = [ 0, 0, 0]	## d0 This appears only at the end of parts sections for direction for some files!  
 		## Other files don't have it.	
 		
-		
+		# These 2 variables are responsoble for the undo functionality
+		# the undo action is a dictionary of voxels with the old color values.
+		# which is appened to the stack when an action is completed.
+		self.stack_undo=[]
+		self.dict_undo_action = {}
 		
 		self.ModelName1=""
 		self.ModelName2=""
@@ -264,6 +269,7 @@ class CVREngine(object):
 		#TODO: add a sanity check for int_part_num and int_mesh_num
 		if int_mesh_num == -1:
 			for mesh in self.parts[int_part_num][1]:
+				
 				mesh.paintvoxel(location, to_color)
 		else:
 			self.parts[int_part_num][1][int_mesh_num].paintvoxel(location, to_color)
@@ -447,6 +453,9 @@ class CVREngine(object):
 		# So.... lets skip it.
 		
 		# -----------------------------------------------------------------
+		
+		
+		
 		
 		# Body Parts 3D data
 		# 
@@ -633,6 +642,8 @@ class CVREngine(object):
 			meshnumber = meshnumber + 1
 		self.parts.append([PartName, meshlist])	
 
+		# Ok now on to the next few parts.
+		
 
 		
 		

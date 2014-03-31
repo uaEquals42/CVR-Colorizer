@@ -459,10 +459,10 @@ class app():
 	
 	def paint_line(self, event, view, color):
 		
-		delta_x = self.previous_location[0]/event.x
-		delta_y = self.previous_location[1]/event.y
+		delta_x = event.x - self.previous_location[0]
+		delta_y = event.y - self.previous_location[1]
 		
-		if(delta_y==1):
+		if(delta_y==0):
 			print("Straight up and down")
 		
 		self.previous_location = (event.x, event.y)

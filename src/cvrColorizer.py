@@ -51,7 +51,7 @@ class app():
 		self.location_id_lookup = {}
 		self.id_location_lookup = {}
 		self.dict_zoom_level = {}
-		
+		self.dict_view_canvas = {}
 		
 		# create a toplevel menu
 		menubar = tk.Menu(self.root)
@@ -88,6 +88,7 @@ class app():
 		self.canvas_top = tk.Canvas(lf_top)
 		self.canvas_top.pack()
 		lf_top.grid(column=0, row=0)
+		self.dict_view_canvas["top"] = self.canvas_top
 		self.canvas_top.bind("<B1-Motion>", lambda e: self.paint_pixel(e,self.canvas_top,"top",self.leftcolor))
 		self.canvas_top.bind("<Button-1>", lambda e: self.paint_pixel(e,self.canvas_top,"top",self.leftcolor))
 		self.canvas_top.bind("<Button-2>", lambda e: self.ChangeZoomLevel(self.canvas_top, "top"))
@@ -98,6 +99,7 @@ class app():
 		self.canvas_left = tk.Canvas(lf_left)
 		self.canvas_left.pack()
 		lf_left.grid(column=0, row=1)
+		self.dict_view_canvas["left"] = self.canvas_left
 		self.canvas_left.bind("<B1-Motion>", lambda e: self.paint_pixel(e,self.canvas_left,"left",self.leftcolor))
 		self.canvas_left.bind("<Button-1>", lambda e: self.paint_pixel(e,self.canvas_left,"left",self.leftcolor))
 		self.canvas_left.bind("<Button-2>", lambda e: self.ChangeZoomLevel(self.canvas_left, "left"))
@@ -108,6 +110,7 @@ class app():
 		self.canvas_front = tk.Canvas(lf_front)
 		self.canvas_front.pack()
 		lf_front.grid(column=2, row=0)
+		self.dict_view_canvas["front"] = self.canvas_left
 		self.canvas_front.bind("<B1-Motion>", lambda e: self.paint_pixel(e,self.canvas_front,"front",self.leftcolor))
 		self.canvas_front.bind("<Button-1>", lambda e: self.paint_pixel(e,self.canvas_front,"front",self.leftcolor))
 		self.canvas_front.bind("<Button-2>", lambda e: self.ChangeZoomLevel(self.canvas_front, "front"))
@@ -118,6 +121,7 @@ class app():
 		self.canvas_bottom = tk.Canvas(lf_bottom)
 		self.canvas_bottom.pack()
 		lf_bottom.grid(column=1, row=0)
+		self.dict_view_canvas["bottom"] = self.canvas_bottom
 		self.canvas_bottom.bind("<B1-Motion>", lambda e: self.paint_pixel(e,self.canvas_bottom,"bottom",self.leftcolor))
 		self.canvas_bottom.bind("<Button-1>", lambda e: self.paint_pixel(e,self.canvas_bottom,"bottom",self.leftcolor))
 		self.canvas_bottom.bind("<Button-2>", lambda e: self.ChangeZoomLevel(self.canvas_bottom, "bottom"))
@@ -128,6 +132,7 @@ class app():
 		self.canvas_right = tk.Canvas(lf_right)
 		self.canvas_right.pack()
 		lf_right.grid(column=1, row=1)
+		self.dict_view_canvas["right"] = self.canvas_right
 		self.canvas_right.bind("<B1-Motion>", lambda e: self.paint_pixel(e,self.canvas_right,"right",self.leftcolor))
 		self.canvas_right.bind("<Button-1>", lambda e: self.paint_pixel(e,self.canvas_right,"right",self.leftcolor))
 		self.canvas_right.bind("<Button-2>", lambda e: self.ChangeZoomLevel(self.canvas_right, "right"))
@@ -138,6 +143,7 @@ class app():
 		self.canvas_back = tk.Canvas(lf_back)
 		self.canvas_back.pack()
 		lf_back.grid(column=2, row=1)
+		self.dict_view_canvas["back"] = self.canvas_back
 		self.canvas_back.bind("<B1-Motion>", lambda e: self.paint_pixel(e,self.canvas_back,"back",self.leftcolor))
 		self.canvas_back.bind("<Button-1>", lambda e: self.paint_pixel(e,self.canvas_back,"back",self.leftcolor))
 		self.canvas_back.bind("<Button-2>", lambda e: self.ChangeZoomLevel(self.canvas_back, "back"))
@@ -437,6 +443,7 @@ class app():
 		self.updateView("front", location, self.canvas_front, color)
 			
 	def paint_pixel(self,event, canvas,view, color):	
+		self.previous_location = (event.x, event.y)
 		if color >= 0 and color < 256:
 			logging.debug(str(event.x) + ","+  str(event.y))
 			try:
@@ -450,7 +457,16 @@ class app():
 				self.CVRfile.paintVoxel(self.int_part_number,self.int_mesh_number,location,color)
 				self.refreshViews(location, color)
 	
+	def paint_line(self, event, view, color):
 		
+		delta_x = self.previous_location[0]/event.x
+		delta_y = self.previous_location[1]/event.y
+		
+		if(delta_y==1):
+			print("Straight up and down")
+		
+		self.previous_location = (event.x, event.y)
+			
 	def setleftcolor(self,e):	
 		if(len(self.filename)>0):
 			

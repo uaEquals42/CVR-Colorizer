@@ -110,7 +110,7 @@ class app():
 		self.canvas_front = tk.Canvas(lf_front)
 		self.canvas_front.pack()
 		lf_front.grid(column=2, row=0)
-		self.dict_view_canvas["front"] = self.canvas_left
+		self.dict_view_canvas["front"] = self.canvas_front
 		self.canvas_front.bind("<B1-Motion>", lambda e: self.paint_line(e, "front", self.leftcolor))
 		self.canvas_front.bind("<Button-1>", lambda e: self.paint_pixel(e.x, e.y, "front",self.leftcolor))
 		self.canvas_front.bind("<Button-2>", lambda e: self.ChangeZoomLevel(self.canvas_front, "front"))
@@ -314,6 +314,7 @@ class app():
 		scale = self.dict_zoom_level[view]
 		logging.debug("Draw the mesh to canvas")
 		yvalue = 1
+		
 		if view=="top":
 			xvalue = 2 
 			zvalue = 1 
@@ -359,10 +360,9 @@ class app():
 		for tmp_var in part[1][0].dimensions():
 			max_dimensions.append(tmp_var)
 	
-		#print("Start")
+
 		for mesh2 in part[1]:
-			#print(max_dimensions)
-			#print(mesh2.dimensions())
+
 			if max_dimensions[0] > mesh2.dimensions()[0]:
 				max_dimensions[0] = mesh2.dimensions()[0]
 			if max_dimensions[1] < mesh2.dimensions()[1]:
@@ -375,7 +375,7 @@ class app():
 				max_dimensions[4] = mesh2.dimensions()[4]
 			if max_dimensions[5] < mesh2.dimensions()[5]:
 				max_dimensions[5] = mesh2.dimensions()[5]
-			#print(max_dimensions)
+
 				
 		mesh = part[1][self.int_mesh_number]		
 	
@@ -392,7 +392,7 @@ class app():
 			
 		y_offset = scale*max_dimensions[2*yvalue+1]+10
 		
-		#print(x_offset)
+
 	
 		# ok, for the view it will be x,y and a z.  Z will be kept track of so that we know if something should be in front
 		# of something else or not.  
@@ -427,10 +427,12 @@ class app():
 		id_location_lookup = {}
 		# now draw it on the canvas
 		for loc_xy, value in dict_display.items():
+			locationxyz = value[2]
+			
 			item_id = canvas_draw.create_rectangle(loc_xy[0],loc_xy[1],loc_xy[0]+scale,loc_xy[1]+scale, width=0, fill=value[1])
-
-			loc_id_lookup[value[2]] = item_id
-			id_location_lookup[item_id] = value[2]
+			loc_id_lookup[locationxyz] = item_id
+			id_location_lookup[item_id] = locationxyz
+			
 		self.location_id_lookup[view] = loc_id_lookup
 		self.id_location_lookup[view] = id_location_lookup
 	
@@ -460,7 +462,7 @@ class app():
 			except:
 				pixel_id = -1
 			if pixel_id != -1:
-				#print(pixel_id) 
+
 				location = self.id_location_lookup[view][pixel_id]
 				logging.debug("Paint Location:" + str(location))
 				self.CVRfile.paintVoxel(self.int_part_number,self.int_mesh_number,location,color)

@@ -33,7 +33,7 @@ from tkinter import messagebox
 
 
 
-logging.basicConfig(level=logging.INFO)		
+logging.basicConfig(level=logging.WARNING)		
 
 class app():
 	
@@ -154,7 +154,7 @@ class app():
 		frame_meshselect = ttk.Frame(self.root)
 		frame_meshselect.grid(column=0, row=1, rowspan=1)
 		
-		button_left = ttk.Button(frame_meshselect, text='<', command=lambda: print("left"))
+		button_left = ttk.Button(frame_meshselect, text='<', command=lambda: self.previous_mesh())
 		self.label_current_dispaly = ttk.Label(frame_meshselect, text='?????')
 		button_right = ttk.Button(frame_meshselect, text='>', command=lambda: self.next_mesh())
 		button_left.grid(column=0, row=0)
@@ -259,7 +259,7 @@ class app():
 			#except:
 				#messagebox.showinfo(message='Error: Failed to open file')
 				#self.quit()
-			
+		self.set_descriptor_text()
 		
 	def SaveAsFile(self):
 		filename = filedialog.asksaveasfilename(filetypes=(("CVR","*.cvr"),))
@@ -276,12 +276,25 @@ class app():
 		self.root.quit()
 	
 	def next_mesh(self):
+		
 		if len(self.filename) > 0:
-			self.int_mesh_number = self.int_mesh_number + 1
-			if self.int_mesh_number >= len(self.CVRfile.return_part(self.int_part_number)[1]):
-				self.int_mesh_number = -1
-			self.set_descriptor_text()
-			self.create_views()
+			number_of_meshes = len(self.CVRfile.return_part(self.int_part_number)[1])
+			if number_of_meshes > 1:
+				self.int_mesh_number = self.int_mesh_number + 1
+				if self.int_mesh_number >= number_of_meshes:
+					self.int_mesh_number = -1
+				self.set_descriptor_text()
+				self.create_views()
+	def previous_mesh(self):
+		
+		if len(self.filename) > 0:
+			number_of_meshes = len(self.CVRfile.return_part(self.int_part_number)[1])
+			if number_of_meshes > 1:
+				self.int_mesh_number = self.int_mesh_number - 1
+				if self.int_mesh_number < -1:
+					self.int_mesh_number = number_of_meshes-1
+				self.set_descriptor_text()
+				self.create_views()	
 		
 	def set_descriptor_text(self):
 		pname = self.CVRfile.part_name(self.int_part_number)

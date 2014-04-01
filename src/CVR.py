@@ -122,6 +122,7 @@ class Mesh(object):
 		self.meshname = self.meshname + str(Number) 
 		self.currentLocation = startposition
 		self.dict_voxels = {}
+		self.voxels=[]
 		
 	
 	def paintvoxel(self,location,tocolor):

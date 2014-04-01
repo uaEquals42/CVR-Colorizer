@@ -89,66 +89,66 @@ class app():
 		self.canvas_top.pack()
 		lf_top.grid(column=0, row=0)
 		self.dict_view_canvas["top"] = self.canvas_top
-		self.canvas_top.bind("<B1-Motion>", lambda e: self.paint_pixel(e,self.canvas_top,"top",self.leftcolor))
-		self.canvas_top.bind("<Button-1>", lambda e: self.paint_pixel(e,self.canvas_top,"top",self.leftcolor))
+		self.canvas_top.bind("<B1-Motion>", lambda e: self.paint_line(e, "top", self.leftcolor))
+		self.canvas_top.bind("<Button-1>", lambda e: self.paint_pixel(e.x, e.y, "top",self.leftcolor))
 		self.canvas_top.bind("<Button-2>", lambda e: self.ChangeZoomLevel(self.canvas_top, "top"))
-		self.canvas_top.bind("<B3-Motion>", lambda e: self.paint_pixel(e,self.canvas_top,"top",self.rightcolor))
-		self.canvas_top.bind("<Button-3>", lambda e: self.paint_pixel(e,self.canvas_top,"top",self.rightcolor))
+		self.canvas_top.bind("<B3-Motion>", lambda e: self.paint_line(e,"top",self.rightcolor))
+		self.canvas_top.bind("<Button-3>", lambda e: self.paint_pixel(e.x, e.y, "top",self.rightcolor))
 		
 		lf_left = ttk.Labelframe(frame_views, text='Left')
 		self.canvas_left = tk.Canvas(lf_left)
 		self.canvas_left.pack()
 		lf_left.grid(column=0, row=1)
 		self.dict_view_canvas["left"] = self.canvas_left
-		self.canvas_left.bind("<B1-Motion>", lambda e: self.paint_pixel(e,self.canvas_left,"left",self.leftcolor))
-		self.canvas_left.bind("<Button-1>", lambda e: self.paint_pixel(e,self.canvas_left,"left",self.leftcolor))
+		self.canvas_left.bind("<B1-Motion>", lambda e: self.paint_line(e, "left",self.leftcolor))
+		self.canvas_left.bind("<Button-1>", lambda e: self.paint_pixel(e.x, e.y, "left",self.leftcolor))
 		self.canvas_left.bind("<Button-2>", lambda e: self.ChangeZoomLevel(self.canvas_left, "left"))
-		self.canvas_left.bind("<B3-Motion>", lambda e: self.paint_pixel(e,self.canvas_left,"left",self.rightcolor))
-		self.canvas_left.bind("<Button-3>", lambda e: self.paint_pixel(e,self.canvas_left,"left",self.rightcolor))
+		self.canvas_left.bind("<B3-Motion>", lambda e: self.paint_line(e, "left",self.rightcolor))
+		self.canvas_left.bind("<Button-3>", lambda e: self.paint_pixel(e.x, e.y, "left",self.rightcolor))
 		
 		lf_front = ttk.Labelframe(frame_views, text='Front')
 		self.canvas_front = tk.Canvas(lf_front)
 		self.canvas_front.pack()
 		lf_front.grid(column=2, row=0)
 		self.dict_view_canvas["front"] = self.canvas_left
-		self.canvas_front.bind("<B1-Motion>", lambda e: self.paint_pixel(e,self.canvas_front,"front",self.leftcolor))
-		self.canvas_front.bind("<Button-1>", lambda e: self.paint_pixel(e,self.canvas_front,"front",self.leftcolor))
+		self.canvas_front.bind("<B1-Motion>", lambda e: self.paint_line(e, "front",self.leftcolor))
+		self.canvas_front.bind("<Button-1>", lambda e: self.paint_pixel(e.x, e.y, "front",self.leftcolor))
 		self.canvas_front.bind("<Button-2>", lambda e: self.ChangeZoomLevel(self.canvas_front, "front"))
-		self.canvas_front.bind("<B3-Motion>", lambda e: self.paint_pixel(e,self.canvas_front,"front",self.rightcolor))
-		self.canvas_front.bind("<Button-3>", lambda e: self.paint_pixel(e,self.canvas_front,"front",self.rightcolor))
+		self.canvas_front.bind("<B3-Motion>", lambda e: self.paint_line(e, "front",self.rightcolor))
+		self.canvas_front.bind("<Button-3>", lambda e: self.paint_pixel(e.x, e.y, "front",self.rightcolor))
 		
 		lf_bottom = ttk.Labelframe(frame_views, text='Bottom')
 		self.canvas_bottom = tk.Canvas(lf_bottom)
 		self.canvas_bottom.pack()
 		lf_bottom.grid(column=1, row=0)
 		self.dict_view_canvas["bottom"] = self.canvas_bottom
-		self.canvas_bottom.bind("<B1-Motion>", lambda e: self.paint_pixel(e,self.canvas_bottom,"bottom",self.leftcolor))
-		self.canvas_bottom.bind("<Button-1>", lambda e: self.paint_pixel(e,self.canvas_bottom,"bottom",self.leftcolor))
+		self.canvas_bottom.bind("<B1-Motion>", lambda e: self.paint_line(e, "bottom",self.leftcolor))
+		self.canvas_bottom.bind("<Button-1>", lambda e: self.paint_pixel(e.x, e.y, "bottom",self.leftcolor))
 		self.canvas_bottom.bind("<Button-2>", lambda e: self.ChangeZoomLevel(self.canvas_bottom, "bottom"))
-		self.canvas_bottom.bind("<B3-Motion>", lambda e: self.paint_pixel(e,self.canvas_bottom,"bottom",self.rightcolor))
-		self.canvas_bottom.bind("<Button-3>", lambda e: self.paint_pixel(e,self.canvas_bottom,"bottom",self.rightcolor))
+		self.canvas_bottom.bind("<B3-Motion>", lambda e: self.paint_line(e, "bottom",self.rightcolor))
+		self.canvas_bottom.bind("<Button-3>", lambda e: self.paint_pixel(e.x, e.y, "bottom",self.rightcolor))
 		
 		lf_right = ttk.Labelframe(frame_views, text='Right')
 		self.canvas_right = tk.Canvas(lf_right)
 		self.canvas_right.pack()
 		lf_right.grid(column=1, row=1)
 		self.dict_view_canvas["right"] = self.canvas_right
-		self.canvas_right.bind("<B1-Motion>", lambda e: self.paint_pixel(e,self.canvas_right,"right",self.leftcolor))
-		self.canvas_right.bind("<Button-1>", lambda e: self.paint_pixel(e,self.canvas_right,"right",self.leftcolor))
+		self.canvas_right.bind("<B1-Motion>", lambda e: self.paint_line(e, "right",self.leftcolor))
+		self.canvas_right.bind("<Button-1>", lambda e: self.paint_pixel(e.x, e.y, "right",self.leftcolor))
 		self.canvas_right.bind("<Button-2>", lambda e: self.ChangeZoomLevel(self.canvas_right, "right"))
-		self.canvas_right.bind("<B3-Motion>", lambda e: self.paint_pixel(e,self.canvas_right,"right",self.rightcolor))
-		self.canvas_right.bind("<Button-3>", lambda e: self.paint_pixel(e,self.canvas_right,"right",self.rightcolor))
+		self.canvas_right.bind("<B3-Motion>", lambda e: self.paint_line(e, "right",self.rightcolor))
+		self.canvas_right.bind("<Button-3>", lambda e: self.paint_pixel(e.x, e.y, "right",self.rightcolor))
 		
 		lf_back = ttk.Labelframe(frame_views, text='Back')
 		self.canvas_back = tk.Canvas(lf_back)
 		self.canvas_back.pack()
 		lf_back.grid(column=2, row=1)
 		self.dict_view_canvas["back"] = self.canvas_back
-		self.canvas_back.bind("<B1-Motion>", lambda e: self.paint_pixel(e,self.canvas_back,"back",self.leftcolor))
-		self.canvas_back.bind("<Button-1>", lambda e: self.paint_pixel(e,self.canvas_back,"back",self.leftcolor))
+		self.canvas_back.bind("<B1-Motion>", lambda e: self.paint_line(e, "back",self.leftcolor))
+		self.canvas_back.bind("<Button-1>", lambda e: self.paint_pixel(e.x, e.y, "back",self.leftcolor))
 		self.canvas_back.bind("<Button-2>", lambda e: self.ChangeZoomLevel(self.canvas_back, "back"))
-		self.canvas_back.bind("<B3-Motion>", lambda e: self.paint_pixel(e,self.canvas_back,"back",self.rightcolor))
-		self.canvas_back.bind("<Button-3>", lambda e: self.paint_pixel(e,self.canvas_back,"back",self.rightcolor))
+		self.canvas_back.bind("<B3-Motion>", lambda e: self.paint_line(e, "back",self.rightcolor))
+		self.canvas_back.bind("<Button-3>", lambda e: self.paint_pixel(e.x, e.y, "back",self.rightcolor))
 		
 	
 		frame_meshselect = ttk.Frame(self.root)
@@ -452,12 +452,12 @@ class app():
 		self.updateView("back", location, self.canvas_back, color)
 		self.updateView("front", location, self.canvas_front, color)
 			
-	def paint_pixel(self,event, canvas,view, color):	
-		self.previous_location = (event.x, event.y)
+	def paint_pixel(self, x,y, view, color):	
+		self.previous_location = (x, y)
 		if color >= 0 and color < 256:
-			logging.debug(str(event.x) + ","+  str(event.y))
+			logging.debug(str(x) + ","+  str(y))
 			try:
-				pixel_id = canvas.find_overlapping(event.x, event.y, event.x+1, event.y+1)[0]
+				pixel_id = self.dict_view_canvas[view].find_overlapping(x, y, x+1, y+1)[0]
 			except:
 				pixel_id = -1
 			if pixel_id != -1:
@@ -468,14 +468,49 @@ class app():
 				self.refreshViews(location, color)
 	
 	def paint_line(self, event, view, color):
+		"""
+		Bresenham's line algorithm
 		
-		delta_x = event.x - self.previous_location[0]
-		delta_y = event.y - self.previous_location[1]
+		"""
 		
-		if(delta_y==0):
-			print("Straight up and down")
+		x1 = event.x
+		y1 = event.y
+		x0 = self.previous_location[0]
+		y0 = self.previous_location[1]
 		
-		self.previous_location = (event.x, event.y)
+		
+		
+		delta_x = abs(x1-x0)
+		delta_y = abs(y1-y0) 
+		if x0 < x1:
+			sx = 1 
+		else: 
+			sx = -1
+		if y0 < y1:
+			sy = 1
+		else:
+			sy = -1
+			
+		err = delta_x-delta_y
+		
+		
+		while True:
+	
+			self.paint_pixel(x0,y0,view,color)
+			
+			if x0==x1 and y0==y1:
+				break
+			
+			e2 = 2 * err
+			if e2 > -delta_y:
+				err = err - delta_y
+				x0 = x0 + sx
+			if e2 < delta_x:
+				err = err + delta_x
+				y0 = y0 + sy 
+
+		self.paint_pixel(x0,y0,view,color)
+		self.previous_location = (x0, y0)
 			
 	def setleftcolor(self,e):	
 		if(len(self.filename)>0):

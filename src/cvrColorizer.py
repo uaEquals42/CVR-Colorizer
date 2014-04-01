@@ -29,7 +29,7 @@ from tkinter import ttk
 from tkinter import filedialog
 from tkinter import colorchooser
 from tkinter import messagebox
-
+import os.path
 
 
 
@@ -236,9 +236,33 @@ class app():
 	
 	def openFile(self):
 		
+		# First see if we have an option file.
+		savelocation = "No save location"
+		if os.path.isfile("options.txt"):
+			with open("options.txt","r") as f:
+				openlocation = f.readline().strip()
+				savelocation = f.readline().strip()
+				print(os.path.abspath(openlocation))
+				print(openlocation)
+				if os.path.exists(os.path.abspath(openlocation)) != True:
+					openlocation = os.path.expanduser("~")
+					#print(openlocation)
+		else:
+			openlocation = os.path.expanduser("~")
+		
 		self.int_part_number = 0
 		self.int_mesh_number = -1
-		self.filename = filedialog.askopenfilename(filetypes=(("CVR","*.cvr"),))
+		# Get the filename!
+		print(openlocation)
+		self.filename = filedialog.askopenfilename(filetypes=(("CVR","*.cvr"),),initialdir=openlocation)
+		
+		# Set this as the new filename if valid in the options file.
+		if len(self.filename)>0:
+			with open("options.txt","w") as f:
+				directory = os.path.dirname(os.path.abspath(self.filename))
+				f.write(directory + " \n")
+				f.write(savelocation)
+		
 		if(len(self.filename)>0):
 			logging.info(self.filename)
 			#try:
@@ -262,9 +286,38 @@ class app():
 		self.set_descriptor_text()
 		
 	def SaveAsFile(self):
-		filename = filedialog.asksaveasfilename(filetypes=(("CVR","*.cvr"),))
-		logging.info(filename)
-		self.CVRfile.saveColors(filename)
+		
+		# First see if we have an option file.
+		savelocation = "No save location"
+		if os.path.isfile("options.txt"):
+			with open("options.txt","r") as f:
+				openlocation = f.readline().strip()
+				savelocation = f.readline().strip()
+				print(os.path.abspath(openlocation))
+				print(openlocation)
+				if os.path.exists(os.path.abspath(savelocation)) != True:
+					savelocation = openlocation
+					if os.path.exists(os.path.abspath(savelocation)) != True:
+						savelocation = savelocation = os.path.expanduser("~")
+					#print(openlocation)
+		else:
+			savelocation = os.path.expanduser("~")
+			# This should never happen.
+			# will only happen if a user deletes the option file while the program is running.
+		
+		filename = filedialog.asksaveasfilename(filetypes=(("CVR","*.cvr"),),initialdir=savelocation)
+		
+		# Set this as the new filename if valid in the options file.
+		if len(filename)>0:
+			with open("options.txt","w") as f:
+				directory = os.path.dirname(os.path.abspath(filename))
+				f.write(openlocation + " \n")
+				f.write(directory)
+		
+		
+			logging.info(filename)
+			self.CVRfile.saveColors(filename)
+		
 		
 	def ExportFile(self):
 		filename = filedialog.asksaveasfilename(filetypes=(("Text","*.txt"),),title="Export")

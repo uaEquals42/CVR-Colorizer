@@ -241,24 +241,24 @@ class app():
 		self.filename = filedialog.askopenfilename(filetypes=(("CVR","*.cvr"),))
 		if(len(self.filename)>0):
 			logging.info(self.filename)
-			try:
-				self.CVRfile = CVR.CVREngine(self.filename)
-				self.setPaletteColors()
-				self.dict_zoom_level["left"] = 1
-				self.dict_zoom_level["right"] = 1
-				self.dict_zoom_level["top"] = 1
-				self.dict_zoom_level["bottom"] = 1
-				self.dict_zoom_level["front"] = 1
-				self.dict_zoom_level["back"] = 1
-				self.create_views()
-				
-				self.leftcolor=-1
-				self.rightcolor=-1
-				self.Colorchoise.itemconfig(1, fill="white")
-				self.Colorchoise.itemconfig(2, fill="white")
-			except:
-				messagebox.showinfo(message='Error: Failed to open file')
-				self.quit()
+			#try:
+			self.CVRfile = CVR.CVREngine(self.filename)
+			self.setPaletteColors()
+			self.dict_zoom_level["left"] = 1
+			self.dict_zoom_level["right"] = 1
+			self.dict_zoom_level["top"] = 1
+			self.dict_zoom_level["bottom"] = 1
+			self.dict_zoom_level["front"] = 1
+			self.dict_zoom_level["back"] = 1
+			self.create_views()
+			
+			self.leftcolor=-1
+			self.rightcolor=-1
+			self.Colorchoise.itemconfig(1, fill="white")
+			self.Colorchoise.itemconfig(2, fill="white")
+			#except:
+				#messagebox.showinfo(message='Error: Failed to open file')
+				#self.quit()
 			
 		
 	def SaveAsFile(self):
@@ -398,7 +398,9 @@ class app():
 		dict_display = {}  # key is (display_x,display_y)  value is (z, colorhash, (x,y,z))
 	
 		for mesh in meshes:
-			for vox in mesh.voxels:
+			for location, vox_list in mesh.dict_voxels.items():
+				vox = vox_list[0]
+				#for vox in mesh.voxels:
 				test_x = x_direction*vox.location[xvalue]*scale+x_offset
 				test_y = -vox.location[yvalue]*scale+y_offset
 				

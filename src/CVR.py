@@ -121,20 +121,25 @@ class Mesh(object):
 		self.__dimensions = None
 		self.meshname = self.meshname + str(Number) 
 		self.currentLocation = startposition
-		self.voxels = []
+		self.dict_voxels = {}
 		
 	
 	def paintvoxel(self,location,tocolor):
-		for v in self.voxels:
-			if v.location == location:
-				v.color = tocolor
+		vox_list = self.dict_voxels.get(location)
+		if vox_list != None:
+			for vox in vox_list:
+				vox.color = tocolor
+		
+		#for v in self.voxels:
+		#	if v.location == location:
+		#		v.color = tocolor
 	
-	def paletteCodesinUse(self):
-		""" Returns a set of the palette numbers in use for this mesh"""
-		colorcodes = set()
-		for v in self.voxels:
-			colorcodes.add(v.color)
-		return colorcodes
+	#def paletteCodesinUse(self):
+	#	""" Returns a set of the palette numbers in use for this mesh"""
+	#	colorcodes = set()
+	#	for v in self.voxels:
+	#		colorcodes.add(v.color)
+	#	return colorcodes
 	
 	def replacecolorcode(self, fromcolor, tocolor):
 		# if fromcolor is -1 all colors will be replaced with new value
@@ -150,32 +155,37 @@ class Mesh(object):
 		self.currentLocation[0] += xyzDelta[0]
 		self.currentLocation[1] += xyzDelta[1]
 		self.currentLocation[2] += xyzDelta[2]
-		self.voxels.append(VoxelPoint(byteposition,(self.currentLocation[0],self.currentLocation[1],self.currentLocation[2]), paletteColor, norm1, norm2))
+		pos = (self.currentLocation[0],self.currentLocation[1],self.currentLocation[2])
+		self.voxels.append(VoxelPoint(byteposition,pos, paletteColor, norm1, norm2))  # for use on saving and exporting.
+		if pos in self.dict_voxels:
+			self.dict_voxels[pos].append([VoxelPoint(byteposition,pos, paletteColor, norm1, norm2)]) # for paint functions.
+		else:
+			self.dict_voxels[pos] = [VoxelPoint(byteposition,pos, paletteColor, norm1, norm2)]
 	
 	def dimensions(self):
-		
+		list_dimen = list(self.dict_voxels.keys())
 		if self.__dimensions == None:
 			logging.debug("Calculate dimensions")
-			xmin = self.voxels[0].location[0]
-			xmax = self.voxels[0].location[0]
-			ymin = self.voxels[0].location[1]
-			ymax = self.voxels[0].location[1]
-			zmin = self.voxels[0].location[2]
-			zmax = self.voxels[0].location[2]
-			for vox in self.voxels:
-				if vox.location[0] < xmin:
-					xmin = vox.location[0]
-				if vox.location[1] < ymin:
-					ymin = vox.location[1]
-				if vox.location[2] < zmin:
-					zmin = vox.location[2]
+			xmin = list_dimen[0][0]
+			xmax = list_dimen[0][0]
+			ymin = list_dimen[0][1]
+			ymax = list_dimen[0][1]
+			zmin = list_dimen[0][2]
+			zmax = list_dimen[0][2]
+			for cord in list_dimen:
+				if cord[0] < xmin:
+					xmin = cord[0]
+				if cord[1] < ymin:
+					ymin = cord[1]
+				if cord[2] < zmin:
+					zmin =cord[2]
 					
-				if vox.location[0] > xmax:
-					xmax = vox.location[0]
-				if vox.location[1] > ymax:
-					ymax = vox.location[1]
-				if vox.location[2] > zmax:
-					zmax = vox.location[2]
+				if cord[0] > xmax:
+					xmax = cord[0]
+				if cord[1] > ymax:
+					ymax = cord[1]
+				if cord[2] > zmax:
+					zmax = cord[2]
 			self.__dimensions = (xmin, xmax, ymin, ymax, zmin, zmax)
 		return self.__dimensions
 				

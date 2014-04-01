@@ -38,6 +38,7 @@ logging.basicConfig(level=logging.WARNING)
 class app():
 	
 	def __init__(self):
+
 		self.unknowncolors='#FF00DC'
 		self.root = tk.Tk()
 		self.root.title("CVR Colorizer 1.0")
@@ -203,6 +204,12 @@ class app():
 		self.drawMesh(view, canvas)
 	
 	def makestringlonger(self, s, length):
+		'''
+		Used for making the hex values the same length.
+		:param s:  string
+		:param length: 
+		'''
+		
 		while(len(s)<length):
 			s = "0"+s
 		return s
@@ -210,9 +217,9 @@ class app():
 						
 	
 	def setPaletteColors(self):
-		"""
+		'''
 		Goes through the squares on the canvas and assigns them their colors.
-		"""
+		'''
 		if len(self.filename)!=0:
 			i = 0
 			while i < len(self.CVRfile.dict_colors):

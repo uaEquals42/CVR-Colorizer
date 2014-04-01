@@ -159,7 +159,7 @@ class Mesh(object):
 		pos = (self.currentLocation[0],self.currentLocation[1],self.currentLocation[2])
 		self.voxels.append(VoxelPoint(byteposition,pos, paletteColor, norm1, norm2))  # for use on saving and exporting.
 		if pos in self.dict_voxels:
-			self.dict_voxels[pos].append([VoxelPoint(byteposition,pos, paletteColor, norm1, norm2)]) # for paint functions.
+			self.dict_voxels[pos].append(VoxelPoint(byteposition,pos, paletteColor, norm1, norm2)) # for paint functions.
 		else:
 			self.dict_voxels[pos] = [VoxelPoint(byteposition,pos, paletteColor, norm1, norm2)]
 	

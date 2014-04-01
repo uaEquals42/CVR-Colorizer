@@ -111,7 +111,7 @@ class app():
 		self.canvas_front.pack()
 		lf_front.grid(column=2, row=0)
 		self.dict_view_canvas["front"] = self.canvas_left
-		self.canvas_front.bind("<B1-Motion>", lambda e: self.paint_line(e, "front",self.leftcolor))
+		self.canvas_front.bind("<B1-Motion>", lambda e: self.paint_line(e, "front", self.leftcolor))
 		self.canvas_front.bind("<Button-1>", lambda e: self.paint_pixel(e.x, e.y, "front",self.leftcolor))
 		self.canvas_front.bind("<Button-2>", lambda e: self.ChangeZoomLevel(self.canvas_front, "front"))
 		self.canvas_front.bind("<B3-Motion>", lambda e: self.paint_line(e, "front",self.rightcolor))
@@ -402,7 +402,7 @@ class app():
 		else:
 			meshes = part[1]
 		
-		dict_display = {}  # key is (display_x,display_y)  value is (z, colorhash, (x,y,z))
+		dict_display = {}  # loc_xy is (display_x,display_y)  value is (z, colorhash, (x,y,z))
 	
 		for mesh in meshes:
 			for location, vox_list in mesh.dict_voxels.items():
@@ -426,12 +426,11 @@ class app():
 		loc_id_lookup = {}
 		id_location_lookup = {}
 		# now draw it on the canvas
-		for key in dict_display.keys():
-			item_id = canvas_draw.create_rectangle(key[0],key[1],key[0]+scale,key[1]+scale, width=0, fill=dict_display[key][1])
-			#canvas_draw.tag_bind(id_num,"<Enter>", lambda e, location=dict_display[key][2], intpart=dict_display[key][3], intmesh=dict_display[key][4] : self.paint_pixel(e,location, intpart, intmesh) )
-			# this doesn't work as I can't drag the mouse over the time
-			loc_id_lookup[dict_display[key][2]] = item_id
-			id_location_lookup[item_id] = dict_display[key][2]
+		for loc_xy, value in dict_display.items():
+			item_id = canvas_draw.create_rectangle(loc_xy[0],loc_xy[1],loc_xy[0]+scale,loc_xy[1]+scale, width=0, fill=value[1])
+
+			loc_id_lookup[value[2]] = item_id
+			id_location_lookup[item_id] = value[2]
 		self.location_id_lookup[view] = loc_id_lookup
 		self.id_location_lookup[view] = id_location_lookup
 	

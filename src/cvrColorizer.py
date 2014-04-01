@@ -242,28 +242,26 @@ class app():
 			with open("options.txt","r") as f:
 				openlocation = f.readline().strip()
 				savelocation = f.readline().strip()
-				print(os.path.abspath(openlocation))
-				print(openlocation)
+			
 				if os.path.exists(os.path.abspath(openlocation)) != True:
 					openlocation = os.path.expanduser("~")
-					#print(openlocation)
+					
 		else:
 			openlocation = os.path.expanduser("~")
 		
 		self.int_part_number = 0
 		self.int_mesh_number = -1
 		# Get the filename!
-		print(openlocation)
+		logging.info(openlocation)
 		self.filename = filedialog.askopenfilename(filetypes=(("CVR","*.cvr"),),initialdir=openlocation)
 		
 		# Set this as the new filename if valid in the options file.
-		if len(self.filename)>0:
+		if os.path.isfile(self.filename):
 			with open("options.txt","w") as f:
 				directory = os.path.dirname(os.path.abspath(self.filename))
 				f.write(directory + " \n")
 				f.write(savelocation)
 		
-		if(len(self.filename)>0):
 			logging.info(self.filename)
 			#try:
 			self.CVRfile = CVR.CVREngine(self.filename)
@@ -283,8 +281,10 @@ class app():
 			#except:
 				#messagebox.showinfo(message='Error: Failed to open file')
 				#self.quit()
-		self.set_descriptor_text()
-		
+			self.set_descriptor_text()
+		else:
+			self.filename=""
+			
 	def SaveAsFile(self):
 		
 		# First see if we have an option file.
@@ -293,13 +293,12 @@ class app():
 			with open("options.txt","r") as f:
 				openlocation = f.readline().strip()
 				savelocation = f.readline().strip()
-				print(os.path.abspath(openlocation))
-				print(openlocation)
+				
 				if os.path.exists(os.path.abspath(savelocation)) != True:
 					savelocation = openlocation
 					if os.path.exists(os.path.abspath(savelocation)) != True:
 						savelocation = savelocation = os.path.expanduser("~")
-					#print(openlocation)
+					
 		else:
 			savelocation = os.path.expanduser("~")
 			# This should never happen.

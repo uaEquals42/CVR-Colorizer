@@ -301,6 +301,13 @@ class app():
 		self.drawMesh('front',  self.canvas_front)
 		self.drawMesh('back',  self.canvas_back)
 		
+	
+	def calc_colorhash(self, color):
+		if(color < len(self.colorhashes)):
+			color_hash = self.colorhashes[color]
+		else:
+			color_hash = self.unknowncolors
+		return color_hash
 		
 	def drawMesh(self, view, canvas_draw):
 
@@ -401,19 +408,20 @@ class app():
 			for location, vox_list in mesh.dict_voxels.items():
 				vox = vox_list[0]
 				#for vox in mesh.voxels:
-				test_x = x_direction*vox.location[xvalue]*scale+x_offset
-				test_y = -vox.location[yvalue]*scale+y_offset
+				test_x = x_direction*location[xvalue]*scale+x_offset
+				test_y = -location[yvalue]*scale+y_offset
 				
-				if(vox.color < len(self.colorhashes)):
-					color_hash = self.colorhashes[vox.color]
-				else:
-					color_hash = self.unknowncolors
 				
-				if (test_x,test_y) in dict_display:
-					if dict_display[(test_x,test_y)][0] < z_direction*vox.location[zvalue]:
-						dict_display[(test_x,test_y)] = (z_direction*vox.location[zvalue],color_hash, vox.location)
+				
+				tmp_xy = (test_x,test_y)
+				tmp_pixel_value = dict_display.get(tmp_xy) # can't use for setting the value again.
+				if tmp_pixel_value!=None:
+					if tmp_pixel_value[0] < z_direction*location[zvalue]:
+						color_hash = self.calc_colorhash(vox.color)
+						dict_display[tmp_xy] = (z_direction*location[zvalue],color_hash, location)
 				else:
-					dict_display[(test_x,test_y)] = (z_direction*vox.location[zvalue],color_hash, vox.location)
+					color_hash = self.calc_colorhash(vox.color)
+					dict_display[tmp_xy] = (z_direction*location[zvalue],color_hash, location)
 		
 		loc_id_lookup = {}
 		id_location_lookup = {}

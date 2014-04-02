@@ -311,19 +311,28 @@ class app():
 			# This should never happen.
 			# will only happen if a user deletes the option file while the program is running.
 		
+		answer = True
 		filename = filedialog.asksaveasfilename(filetypes=(("CVR","*.cvr"),),initialdir=savelocation)
+		#ok, now see if it has .cvr for the file extension.
+		if filename.lower().endswith(".cvr") == False:
+			filename = filename + ".cvr"
+			#see if there is a conflict
+			if os.path.exists(filename):
+				answer = messagebox.askokcancel("Overwrite File?", "File already exists with that name.  Overwrite?")
 		
-		# Set this as the new filename if valid in the options file.
-		if len(filename)>0:
-			with open("options.txt","w") as f:
-				directory = os.path.dirname(os.path.abspath(filename))
-				f.write(openlocation + " \n")
-				f.write(directory)
+		if answer:		
+			# Set this as the new filename if valid in the options file.
+			if len(filename)>0:
+				with open("options.txt","w") as f:
+					directory = os.path.dirname(os.path.abspath(filename))
+					f.write(openlocation + " \n")
+					f.write(directory)
+			
+			
+				logging.info(filename)
+				self.CVRfile.saveColors(filename)
 		
-		
-			logging.info(filename)
-			self.CVRfile.saveColors(filename)
-		
+
 		
 	def ExportFile(self):
 		filename = filedialog.asksaveasfilename(filetypes=(("Text","*.txt"),),title="Export")

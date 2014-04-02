@@ -37,6 +37,30 @@ logging.basicConfig(level=logging.INFO)
 
 class app():
 	
+	def about_dialog(self):
+		top = tk.Toplevel()
+		top.title("About this application...")
+		
+		#msg = Message(top, text=about_message)
+		#msg.pack()
+		t = tk.Text(top, width=70, height=8)
+		t.insert("1.0", "CVR Colorizer\nBy Gregory Jordan\n(C) 2014 \n\nSource Code at: https://github.com/uaEquals42/CVR-Colorizer\nForum: http://alphacentauri2.info/index.php?topic=7866 ")
+		t.pack()
+		button = ttk.Button(top, text="Ok", command=top.destroy)
+		button.pack()
+		
+	def help_dialog(self):
+		top = tk.Toplevel()
+		top.title("Help")
+		
+		#msg = Message(top, text=about_message)
+		#msg.pack()
+		t = tk.Text(top, width=80, height=8)
+		t.insert("1.0", "Controls:\nClicking the middle mouse button will zoom in/out on a view.\n|<  >| will cycle through any available parts.\n< > Will cycle through any available submeshes.\nTo select a color click on it with either your right or left mouse button.\nSave As will save the file as a .cvr.  Export will save it as a text file.")
+		t.pack()
+		button = ttk.Button(top, text="Ok", command=top.destroy)
+		button.pack()
+	
 	def __init__(self):
 
 		self.unknowncolors='#FF00DC'
@@ -60,14 +84,19 @@ class app():
 		
 
 		menu_options = tk.Menu(menubar)
+		menu_help = tk.Menu(menubar)
 		menubar.add_cascade(menu=menu_file, label='File')
 		menubar.add_cascade(menu=menu_options, label='Options')
+		menubar.add_cascade(menu=menu_help, label='Help')
 	
 		
 		menu_file.add_command(label='Open...', command=lambda: self.openFile())
 		menu_file.add_command(label='Save As', command=lambda: self.SaveAsFile())
 		menu_file.add_command(label='Export', command=lambda: self.ExportFile())
 		menu_file.add_command(label='Exit', command=lambda: self.quit())
+		
+		menu_help.add_command(label='Help', command=lambda: self.help_dialog())
+		menu_help.add_command(label='About', command=lambda: self.about_dialog())
 		
 		menu_options.add_command(label='Select color for unknown colors', command=lambda: self.setUknownColors())
 		

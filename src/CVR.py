@@ -22,6 +22,7 @@ https://github.com/uaEquals42/CVR-Colorizer
 """
 import logging
 import struct
+import collections
 
 
 def colorname(color):
@@ -126,10 +127,14 @@ class Mesh(object):
 		
 	
 	def paintvoxel(self,location,tocolor):
+		undo = {}
 		vox_list = self.dict_voxels.get(location)
 		if vox_list != None:
 			for vox in vox_list:
-				vox.color = tocolor
+				if(vox.color!=tocolor):
+					undo[vox] = vox.color
+					vox.color = tocolor
+		return undo		
 		
 		# return a list for the undo function.
 		
@@ -251,7 +256,7 @@ class CVREngine(object):
 		# These 2 variables are responsible for the undo functionality
 		# the undo action is a dictionary of voxels with the old color values.
 		# which is append to the stack when an action is completed.
-		self.stack_undo=[]
+		self.stack_undo= collections.deque()
 		self.dict_undo_action = {}
 		
 		self.ModelName1=""
@@ -267,7 +272,11 @@ class CVREngine(object):
 		self.load(filename)
 		logging.info(len(self.parts))
 	
-	
+	def new_undo_step(self):
+		self.stack_undo.append(self.dict_undo_action)
+		self.dict_undo_action = {}
+		if len(self.stack_undo) > 10:
+			self.stack_undo.popleft()
 	
 	def paintVoxel(self, int_part_num, int_mesh_num, location, to_color):
 		"""
@@ -278,12 +287,26 @@ class CVREngine(object):
 		"""
 		#TODO: add a check for to_color
 		#TODO: add a sanity check for int_part_num and int_mesh_num
+		
 		if int_mesh_num == -1:
 			for mesh in self.parts[int_part_num][1]:
-				
-				mesh.paintvoxel(location, to_color)
+				self.dict_undo_action.update(mesh.paintvoxel(location, to_color))
 		else:
-			self.parts[int_part_num][1][int_mesh_num].paintvoxel(location, to_color)
+			self.dict_undo_action.update(self.parts[int_part_num][1][int_mesh_num].paintvoxel(location, to_color))
+			
+	def undoVoxels(self):
+		
+		if self.dict_undo_action != {}:
+			undoactions = self.dict_undo_action
+			self.dict_undo_action = {}
+		else:
+			if len(self.stack_undo) > 0:
+				undoactions = self.stack_undo.pop()
+			else:
+				undoactions = {}
+			
+		for vox, old_color in undoactions.items():
+			vox.color = old_color
 	
 	
 	def returnMesh(self, int_part_num, int_mesh_num):

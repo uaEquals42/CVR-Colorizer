@@ -469,6 +469,12 @@ class CVREngine(object):
 		
 		
 		
+		
+		
+		
+		
+		
+		
 		# Body Parts 3D data
 		# 
 		pos = threedlocation
@@ -507,155 +513,158 @@ class CVREngine(object):
 		logging.info("Number of frames is " + str(self.int_number_of_frames))
 	
 		
-		# lets get the current part's name
-		#00 01 04 04	
-		pos = self.findnextcodepos(pos,CVRfile,[0x00,0x01,0x04,0x04])
-		partnameLength = CVRfile[pos]-8	
-		logging.debug("Part name length: " + str(partnameLength))  # for srb the value should be 3
-		s = str(partnameLength)+"s"
-		pos+=4
-		PartName = struct.unpack(s, CVRfile[pos:pos + partnameLength])[0].decode(encoding='UTF-8')
-		logging.info(PartName)
-		pos+=partnameLength
+		int_partcount = 0
 		
-		
-		
-		# Grab the next parts location!   This could fail in theory (I noticed an animation file didn't have this section)!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		# TODO: , place into a try catch statement as it will fail for some files.
-		## I should probably make this throw an error if it isn't correct.	
-		pos = self.findnextcodepos(pos,CVRfile,[0x00,0x02,0x04,0x04])
-		nextpart = struct.unpack("I", CVRfile[pos:pos+4])[0]+pos
-		logging.info("Location of next part is " + str(nextpart))
-		
-		
-		
-		## There is another distance code here.... not sure why  Not bothering to read it in right now
-		
-		
-		pos = self.findnextcodepos(pos,CVRfile,[0x01,0x02,0x04,0x04])
-		
-		## TODO use id code movement stuff.
-		## Does some scalling here.  As far as I can tell.  It will only use one of these.
-		int_scale_z = CVRfile[pos+1+24]
-		int_scale_x = CVRfile[pos+3+24]
-		int_scale_y = CVRfile[pos+5+24]
-	
-		# Since the code currently does nothing with these, and the potential of this being important, lets throw a warning if they
-		# Don't equal 0
-		if(int_scale_z + int_scale_x + int_scale_y != 0):
-			logging.warning("Scales z:" + str(int_scale_z) + "  Scales x:" + str(int_scale_x) + "  Scales y:"+ str(int_scale_y))
-			logging.warning("Non-zero scaling factor on file!")
-		else:
-			logging.debug("Scales z:" + str(int_scale_z) + "  Scales x:" + str(int_scale_x) + "  Scales y:"+ str(int_scale_y))
-		
-		# I'm not sure what these are for.  It affected the view of the object.  Might be length of the stuff.
-		# Length?  Perhaps?  Need to see if they match up with anything.
-		int_view_z = CVRfile[pos+24]
-		int_view_x = CVRfile[pos+2+24]
-		int_view_y = CVRfile[pos+4+24]
-		logging.info("What? z:" + str(int_view_z) + "  x:" + str(int_view_x) + "  y:"+ str(int_view_y))
-	
-		
-		## Positional data!  
-		z0 = struct.unpack("h", CVRfile[pos+30:pos+32])[0]
-		x0 = struct.unpack("h", CVRfile[pos+32:pos+34])[0]
-		y0 = struct.unpack("h", CVRfile[pos+34:pos+36])[0]
-		logging.debug("Position 0 Z: " + str(z0) + "  x:" + str(x0) + "  y:"+ str(y0))
-		
-		
-		## and then we have the rotation point data of the object	
-		zr = struct.unpack("h", CVRfile[pos+36:pos+38])[0]
-		xr = struct.unpack("h", CVRfile[pos+38:pos+40])[0]
-		yr = struct.unpack("h", CVRfile[pos+40:pos+42])[0]
-		logging.info("Rotation Point or Offset? Info Z: " + str(zr) + "  x:" + str(xr) + "  y:"+ str(yr))
-		
-		
-		pos+=42
-		# Total Number of voxels
-		int_totalvox =  struct.unpack("I", CVRfile[pos:pos+4])[0]
-		logging.info("Total Voxels count " + str(int_totalvox))
-		pos+=4
-		
-		
-		
-		
-	
-		
-		# Ok.  First thing first.  Is this a multipart mesh or not?  I think it is never the case for multi-part objects, but I could be wrong....
-		# The problem is some meshes have it, others don't....
-		# The method I use below to figure it out probably isn't right, but hopefully it will work.
-		# The idea:  If it is a multimesh, this first one always? has 00 00 00 00 before the 3d data, 
-		# I check to see if there is 4 0x00 at that location, if there is, then it is a multimesh.   
-		bool_multimesh = CVRfile[pos+28]==0 and CVRfile[pos+29]==0 and CVRfile[pos+30]==0 and CVRfile[pos+31]==0
-		logging.info("MultiMesh?: " + str(bool_multimesh))
-		
-		
-		
-		
-		array_pos = [x0,y0,z0]
-		vox_count_section = int_totalvox
-		
-		
-		logging.info(array_pos)
-		int_tmpcount1 = 0
-		int_tmpcount2 = 0
-		
-		
-		meshnumber = 0
-		meshlist =[]
-		while int_tmpcount1 < int_totalvox:
-			
-			if(bool_multimesh):
-				z1 = struct.unpack("h", CVRfile[pos:pos+2])[0]
-				x1 = struct.unpack("h", CVRfile[pos+2:pos+4])[0]
-				y1 = struct.unpack("h", CVRfile[pos+4:pos+6])[0]
-				logging.info("Pos1," + str(x1) + "," + str(y1) + "," + str(z1))
-				#Bunch of stuff inbetween that I think deals with the viewing area.
-				#Not really sure.
-				#lets... skip it, shall we?
-				pos+= 18
-				
-				z2 = struct.unpack("h", CVRfile[pos:pos+2])[0]
-				x2 = struct.unpack("h", CVRfile[pos+2:pos+4])[0]
-				y2 = struct.unpack("h", CVRfile[pos+4:pos+6])[0]
-			
-				logging.info("Pos2," + str(x2) + "," + str(y2) + "," + str(z2))
-			
-				
-				# Now read how many voxels until the next jump
-				pos+=6
-				vox_count_section = struct.unpack("I", CVRfile[pos:pos+4])[0]
-				logging.info("Voxels to next mesh" + str(vox_count_section))
-				
-				pos+=8
-				
-				# Yeah.... not sure if this is correct... 
-				array_pos = [x1+x2,y1+y2,z1+z2]
-				int_tmpcount2=0
+		while int_partcount < self.int_numberofparts:
 			
 			
-			tmpMesh = Mesh(meshnumber,array_pos)
-			while int_tmpcount2 < vox_count_section:	
+			# lets get the current part's name
+			#00 01 04 04	
+			pos = self.findnextcodepos(pos,CVRfile,[0x00,0x01,0x04,0x04])
+			partnameLength = CVRfile[pos]-8	
+			logging.debug("Part name length: " + str(partnameLength))  # for srb the value should be 3
+			s = str(partnameLength)+"s"
+			pos+=4
+			PartName = struct.unpack(s, CVRfile[pos:pos + partnameLength])[0].decode(encoding='UTF-8')
+			logging.info(PartName)
+			pos+=partnameLength
+			
+			
+			
+			# Grab the next parts location!   This could fail in theory (I noticed an animation file didn't have this section)!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			# TODO: , place into a try catch statement as it will fail for some files.
+			## I should probably make this throw an error if it isn't correct.	
+			#pos = self.findnextcodepos(pos,CVRfile,[0x00,0x02,0x04,0x04])
+			#nextpart = struct.unpack("I", CVRfile[pos:pos+4])[0]+pos
+			#logging.info("Location of next part is " + str(nextpart))
+			
+			
+			
+			## There is another distance code here.... not sure why  Not bothering to read it in right now
+			
+			
+			pos = self.findnextcodepos(pos,CVRfile,[0x01,0x02,0x04,0x04])
+			
+			## TODO use id code movement stuff.
+			## Does some scalling here.  As far as I can tell.  It will only use one of these.
+			int_scale_z = CVRfile[pos+1+24]
+			int_scale_x = CVRfile[pos+3+24]
+			int_scale_y = CVRfile[pos+5+24]
+		
+			# Since the code currently does nothing with these, and the potential of this being important, lets throw a warning if they
+			# Don't equal 0
+			if(int_scale_z + int_scale_x + int_scale_y != 0):
+				logging.warning("Scales z:" + str(int_scale_z) + "  Scales x:" + str(int_scale_x) + "  Scales y:"+ str(int_scale_y))
+				logging.warning("Non-zero scaling factor on file!")
+			else:
+				logging.debug("Scales z:" + str(int_scale_z) + "  Scales x:" + str(int_scale_x) + "  Scales y:"+ str(int_scale_y))
+			
+			# I'm not sure what these are for.  It affected the view of the object.  Might be length of the stuff.
+			# Length?  Perhaps?  Need to see if they match up with anything.
+			int_view_z = CVRfile[pos+24]
+			int_view_x = CVRfile[pos+2+24]
+			int_view_y = CVRfile[pos+4+24]
+			logging.info("What? z:" + str(int_view_z) + "  x:" + str(int_view_x) + "  y:"+ str(int_view_y))
+		
+			
+			## Positional data!  
+			z0 = struct.unpack("h", CVRfile[pos+30:pos+32])[0]
+			x0 = struct.unpack("h", CVRfile[pos+32:pos+34])[0]
+			y0 = struct.unpack("h", CVRfile[pos+34:pos+36])[0]
+			logging.debug("Position 0 Z: " + str(z0) + "  x:" + str(x0) + "  y:"+ str(y0))
+			
+			
+			## and then we have the rotation point data of the object	
+			zr = struct.unpack("h", CVRfile[pos+36:pos+38])[0]
+			xr = struct.unpack("h", CVRfile[pos+38:pos+40])[0]
+			yr = struct.unpack("h", CVRfile[pos+40:pos+42])[0]
+			logging.info("Rotation Point or Offset? Info Z: " + str(zr) + "  x:" + str(xr) + "  y:"+ str(yr))
+			
+			
+			pos+=42
+			# Total Number of voxels
+			int_totalvox =  struct.unpack("I", CVRfile[pos:pos+4])[0]
+			logging.info("Total Voxels count " + str(int_totalvox))
+			pos+=4
+			
+			
+			
+			
+		
+			
+			# Ok.  First thing first.  Is this a multipart mesh or not?  I think it is never the case for multi-part objects, but I could be wrong....
+			# The problem is some meshes have it, others don't....
+			# The method I use below to figure it out probably isn't right, but hopefully it will work.
+			# The idea:  If it is a multimesh, this first one always? has 00 00 00 00 before the 3d data, 
+			# I check to see if there is 4 0x00 at that location, if there is, then it is a multimesh.   
+			bool_multimesh = CVRfile[pos+28]==0 and CVRfile[pos+29]==0 and CVRfile[pos+30]==0 and CVRfile[pos+31]==0
+			logging.info("MultiMesh?: " + str(bool_multimesh))
+			
+			
+			
+			
+			array_pos = [x0,y0,z0]
+			vox_count_section = int_totalvox
+			
+			
+			logging.info(array_pos)
+			int_tmpcount1 = 0
+			int_tmpcount2 = 0
+			
+			
+			meshnumber = 0
+			meshlist =[]
+			while int_tmpcount1 < int_totalvox:
 				
-				#print(int_tmpcount)
-				#print(pos)
-				if('11010' == self.bytetobinary(CVRfile[pos])[0:5]):
-					logging.info("Here it is again")  # didn't find any! on ACP00... but on ones that have multimesh conversions into a single part... its there
-					# ok, 
-				else:
+				if(bool_multimesh):
+					z1 = struct.unpack("h", CVRfile[pos:pos+2])[0]
+					x1 = struct.unpack("h", CVRfile[pos+2:pos+4])[0]
+					y1 = struct.unpack("h", CVRfile[pos+4:pos+6])[0]
+					logging.info("Pos1," + str(x1) + "," + str(y1) + "," + str(z1))
+					#Bunch of stuff inbetween that I think deals with the viewing area.
+					#Not really sure.
+					#lets... skip it, shall we?
+					pos+= 18
 					
-					tmpMesh.addvoxel(pos, self.dict_directions[self.bytetobinary(CVRfile[pos])[0:5]], CVRfile[pos+2], "-1", "-1")
-					
-				pos+=3
-				int_tmpcount2+=1
-				int_tmpcount1+=1
+					z2 = struct.unpack("h", CVRfile[pos:pos+2])[0]
+					x2 = struct.unpack("h", CVRfile[pos+2:pos+4])[0]
+					y2 = struct.unpack("h", CVRfile[pos+4:pos+6])[0]
 				
-			meshlist.append(tmpMesh)	
-			meshnumber = meshnumber + 1
-		self.parts.append([PartName, meshlist])	
-
-		# Ok now on to the next few parts.
+					logging.info("Pos2," + str(x2) + "," + str(y2) + "," + str(z2))
+				
+					
+					# Now read how many voxels until the next jump
+					pos+=6
+					vox_count_section = struct.unpack("I", CVRfile[pos:pos+4])[0]
+					logging.info("Voxels to next mesh" + str(vox_count_section))
+					
+					pos+=8
+					
+					# Yeah.... not sure if this is correct... 
+					array_pos = [x1+x2,y1+y2,z1+z2]
+					int_tmpcount2=0
+				
+				
+				tmpMesh = Mesh(meshnumber,array_pos)
+				while int_tmpcount2 < vox_count_section:	
+					
+					#print(int_tmpcount)
+					#print(pos)
+					if('11010' == self.bytetobinary(CVRfile[pos])[0:5]):
+						logging.info("Here it is again")  # didn't find any! on ACP00... but on ones that have multimesh conversions into a single part... its there
+						# ok, 
+					else:
+						
+						tmpMesh.addvoxel(pos, self.dict_directions[self.bytetobinary(CVRfile[pos])[0:5]], CVRfile[pos+2], "-1", "-1")
+						
+					pos+=3
+					int_tmpcount2+=1
+					int_tmpcount1+=1
+					
+				meshlist.append(tmpMesh)	
+				meshnumber = meshnumber + 1
+			self.parts.append([PartName, meshlist])	
+			int_partcount = int_partcount+1
 		
-
 		
 		

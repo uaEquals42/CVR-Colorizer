@@ -33,7 +33,7 @@ import os.path
 
 
 
-logging.basicConfig(level=logging.WARNING)		
+logging.basicConfig(level=logging.INFO)		
 
 class app():
 	
@@ -155,12 +155,17 @@ class app():
 		frame_meshselect = ttk.Frame(self.root)
 		frame_meshselect.grid(column=0, row=1, rowspan=1)
 		
-		button_left = ttk.Button(frame_meshselect, text='<', command=lambda: self.previous_mesh())
+		# next/previous mesh/part
+		button_left_part = ttk.Button(frame_meshselect, text='|<', command=lambda: self.next_part(-1))
+		button_left = ttk.Button(frame_meshselect, text='<', command=lambda: self.next_mesh(-1))
 		self.label_current_dispaly = ttk.Label(frame_meshselect, text='?????')
-		button_right = ttk.Button(frame_meshselect, text='>', command=lambda: self.next_mesh())
-		button_left.grid(column=0, row=0)
-		self.label_current_dispaly.grid(column=1, row=0)
-		button_right.grid(column=2, row=0)
+		button_right = ttk.Button(frame_meshselect, text='>', command=lambda: self.next_mesh(1))
+		button_right_part = ttk.Button(frame_meshselect, text='>|', command=lambda: self.next_part(1))
+		button_left_part.grid(column=0, row=0)
+		button_left.grid(column=1, row=0)
+		self.label_current_dispaly.grid(column=2, row=0)
+		button_right.grid(column=3, row=0)
+		button_right_part.grid(column=4, row=0)
 
 		self.Colorarea = tk.Canvas(self.root, height=9*20+2, width=640 )
 		self.Colorarea.grid(column=0, row=2)
@@ -343,26 +348,30 @@ class app():
 	def quit(self):
 		self.root.quit()
 	
-	def next_mesh(self):
-		
+	def next_part(self, direction):
 		if len(self.filename) > 0:
-			number_of_meshes = len(self.CVRfile.return_part(self.int_part_number)[1])
-			if number_of_meshes > 1:
-				self.int_mesh_number = self.int_mesh_number + 1
-				if self.int_mesh_number >= number_of_meshes:
-					self.int_mesh_number = -1
+			number_of_parts = self.CVRfile.int_numberofparts
+			if number_of_parts > 1:
+				self.int_part_number = self.int_part_number + direction
+				if self.int_part_number >= number_of_parts:
+					self.int_part_number = -1
+				elif self.int_part_number < -1:
+					self.int_part_number = number_of_parts-1
 				self.set_descriptor_text()
 				self.create_views()
-	def previous_mesh(self):
-		
+	
+	def next_mesh(self, direction):
 		if len(self.filename) > 0:
 			number_of_meshes = len(self.CVRfile.return_part(self.int_part_number)[1])
 			if number_of_meshes > 1:
-				self.int_mesh_number = self.int_mesh_number - 1
-				if self.int_mesh_number < -1:
-					self.int_mesh_number = number_of_meshes-1
+				self.int_mesh_number = self.int_mesh_number + direction
+				if self.int_mesh_number >= number_of_meshes:
+					self.int_mesh_number = -1
+				elif self.int_mesh_number < -1:
+					self.self.int_mesh_number = number_of_meshes-1
 				self.set_descriptor_text()
-				self.create_views()	
+				self.create_views()
+	
 		
 	def set_descriptor_text(self):
 		pname = self.CVRfile.part_name(self.int_part_number)

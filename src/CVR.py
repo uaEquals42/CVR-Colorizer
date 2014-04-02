@@ -157,11 +157,12 @@ class Mesh(object):
 		self.currentLocation[1] += xyzDelta[1]
 		self.currentLocation[2] += xyzDelta[2]
 		pos = (self.currentLocation[0],self.currentLocation[1],self.currentLocation[2])
-		self.voxels.append(VoxelPoint(byteposition,pos, paletteColor, norm1, norm2))  # for use on saving and exporting.
+		tmp_voxel = VoxelPoint(byteposition,pos, paletteColor, norm1, norm2)
+		self.voxels.append(tmp_voxel)  # for use on saving and exporting.
 		if pos in self.dict_voxels:
-			self.dict_voxels[pos].append(VoxelPoint(byteposition,pos, paletteColor, norm1, norm2)) # for paint functions.
+			self.dict_voxels[pos].append(tmp_voxel) # for paint functions.
 		else:
-			self.dict_voxels[pos] = [VoxelPoint(byteposition,pos, paletteColor, norm1, norm2)]
+			self.dict_voxels[pos] = [tmp_voxel]
 	
 	def dimensions(self):
 		list_dimen = list(self.dict_voxels.keys())

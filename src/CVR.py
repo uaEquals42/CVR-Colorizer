@@ -131,9 +131,8 @@ class Mesh(object):
 			for vox in vox_list:
 				vox.color = tocolor
 		
-		#for v in self.voxels:
-		#	if v.location == location:
-		#		v.color = tocolor
+		# return a list for the undo function.
+		
 	
 	#def paletteCodesinUse(self):
 	#	""" Returns a set of the palette numbers in use for this mesh"""
@@ -249,9 +248,9 @@ class CVREngine(object):
 		self.dict_directions['11010'] = [ 0, 0, 0]	## d0 This appears only at the end of parts sections for direction for some files!  
 		## Other files don't have it.	
 		
-		# These 2 variables are responsoble for the undo functionality
+		# These 2 variables are responsible for the undo functionality
 		# the undo action is a dictionary of voxels with the old color values.
-		# which is appened to the stack when an action is completed.
+		# which is append to the stack when an action is completed.
 		self.stack_undo=[]
 		self.dict_undo_action = {}
 		

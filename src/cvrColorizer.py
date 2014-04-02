@@ -55,8 +55,8 @@ class app():
 		
 		#msg = Message(top, text=about_message)
 		#msg.pack()
-		t = tk.Text(top, width=80, height=8)
-		t.insert("1.0", "Controls:\nClicking the middle mouse button will zoom in/out on a view.\n|<  >| will cycle through any available parts.\n< > Will cycle through any available submeshes.\nTo select a color click on it with either your right or left mouse button.\nSave As will save the file as a .cvr.  Export will save it as a text file.")
+		t = tk.Text(top, width=80, height=12)
+		t.insert("1.0", "Bugs:\nSome colors are unknown.\nSome of the unknown colors aren't shown as being unknown.  Instead they appear \nblack.\n\nControls:\nClicking the middle mouse button will zoom in/out on a view.\n|<  >| will cycle through any available parts.\n< > Will cycle through any available submeshes.\nTo select a color click on it with either your right or left mouse button.\nSave As will save the file as a .cvr.  Export will save it as a text file.")
 		t.pack()
 		button = ttk.Button(top, text="Ok", command=top.destroy)
 		button.pack()
@@ -215,21 +215,23 @@ class app():
 				
 			r = r + 20
 		
-		bottom_area = tk.Frame()
-		bottom_area.grid(column=0, row=3, columnspan=4)
+		#bottom_area = tk.Frame()
+		#bottom_area.grid(column=0, row=3, columnspan=4)
 		
 		# The selected colors are displayed here.
-		self.Colorchoise = tk.Canvas(bottom_area, height=50, width=50 )
+		self.Colorchoise = tk.Canvas(self.root, height=50, width=50 )
 		self.Colorchoise.create_rectangle((17,17,47,47), fill="white")
 		self.Colorchoise.create_rectangle((2,2,32,32), fill="white")		
-		self.Colorchoise.grid(column=0, row=0)
+		self.Colorchoise.grid(column=0, row=3,sticky="w")
 		
+		"""  
 		self.paintSize_var = tk.IntVar()
 		self.paintSize_var.set(1)
 		combo_paint_size = ttk.Combobox(bottom_area, textvariable=self.paintSize_var)
 		combo_paint_size['values'] = (1,2,3,4,5,6,7,8,9,10,12,14,16,18,20,22,24)
 		combo_paint_size.grid(column=1, row=0)
 		combo_paint_size.bind('<<ComboboxSelected>>', lambda e: print(self.paintSize_var.get()))
+		"""
 		
 		self.root.mainloop()	
 	

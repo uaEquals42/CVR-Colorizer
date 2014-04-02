@@ -62,8 +62,9 @@ class app():
 		button.pack()
 	
 	def undoCommand(self):
-		self.CVRfile.undoVoxels()
-		self.create_views()
+		if self.CVRfile != None:
+			self.CVRfile.undoVoxels()
+			self.create_views()
 		
 	
 	def __init__(self):
@@ -82,9 +83,11 @@ class app():
 		self.id_location_lookup = {}
 		self.dict_zoom_level = {}
 		self.dict_view_canvas = {}
+		self.CVRfile = None
 		
 
-		#self.root.bind_all(sequence, func, add)
+		self.root.bind_all("<Control-Key-s>", lambda e: self.Save())
+		self.root.bind_all("<Control-Key-z>", lambda e: self.undoCommand())
 		
 		
 		# create a toplevel menu
@@ -102,9 +105,10 @@ class app():
 		menubar.add_cascade(menu=menu_options, label='Options')
 		menubar.add_cascade(menu=menu_help, label='Help')
 	
-		menu_edit.add_command(label='Undo', command=lambda: self.undoCommand())
+		menu_edit.add_command(label='Undo  Ctrl+z', command=lambda: self.undoCommand())
 		
 		menu_file.add_command(label='Open...', command=lambda: self.openFile())
+		menu_file.add_command(label='Save  Ctrl+s', command=lambda: self.Save())
 		menu_file.add_command(label='Save As', command=lambda: self.SaveAsFile())
 		menu_file.add_command(label='Export', command=lambda: self.ExportFile())
 		menu_file.add_command(label='Exit', command=lambda: self.quit())
@@ -301,7 +305,7 @@ class app():
 		
 	
 	def openFile(self):
-		
+		oldfilename = self.filename
 		# First see if we have an option file.
 		savelocation = "No save location"
 		if os.path.isfile("options.txt"):
@@ -329,28 +333,32 @@ class app():
 				f.write(savelocation)
 		
 			logging.info(self.filename)
-			#try:
-			self.CVRfile = CVR.CVREngine(self.filename)
-			self.setPaletteColors()
-			self.dict_zoom_level["left"] = 1
-			self.dict_zoom_level["right"] = 1
-			self.dict_zoom_level["top"] = 1
-			self.dict_zoom_level["bottom"] = 1
-			self.dict_zoom_level["front"] = 1
-			self.dict_zoom_level["back"] = 1
-			self.create_views()
-			
-			self.leftcolor=-1
-			self.rightcolor=-1
-			self.Colorchoise.itemconfig(1, fill="white")
-			self.Colorchoise.itemconfig(2, fill="white")
-			#except:
-				#messagebox.showinfo(message='Error: Failed to open file')
-				#self.quit()
+			try:
+				self.CVRfile = CVR.CVREngine(self.filename)
+				self.setPaletteColors()
+				self.dict_zoom_level["left"] = 1
+				self.dict_zoom_level["right"] = 1
+				self.dict_zoom_level["top"] = 1
+				self.dict_zoom_level["bottom"] = 1
+				self.dict_zoom_level["front"] = 1
+				self.dict_zoom_level["back"] = 1
+				self.create_views()
+				
+				self.leftcolor=-1
+				self.rightcolor=-1
+				self.Colorchoise.itemconfig(1, fill="white")
+				self.Colorchoise.itemconfig(2, fill="white")
+			except:
+				messagebox.showinfo(message='Error: Failed to open file')
+				self.quit()
 			self.set_descriptor_text()
 		else:
-			self.filename=""
-			
+			self.filename=oldfilename
+	
+	def Save(self):	
+		if self.CVRfile!=None and os.path.isfile(self.filename):
+			self.CVRfile.saveColors(self.filename)
+		
 	def SaveAsFile(self):
 		
 		# First see if we have an option file.
@@ -390,6 +398,7 @@ class app():
 			
 				logging.info(filename)
 				self.CVRfile.saveColors(filename)
+				self.filename = filename
 		
 
 		
@@ -599,8 +608,9 @@ class app():
 	
 	
 	def click_paint_pixel(self, x, y, view, color):
-		self.CVRfile.new_undo_step()
-		self.paint_pixel(x, y, view, color)
+		if self.CVRfile != None:
+			self.CVRfile.new_undo_step()
+			self.paint_pixel(x, y, view, color)
 			
 	def paint_pixel(self, x,y, view, color):	
 		self.previous_location = (x, y)

@@ -275,7 +275,7 @@ class CVREngine(object):
 	def new_undo_step(self):
 		self.stack_undo.append(self.dict_undo_action)
 		self.dict_undo_action = {}
-		if len(self.stack_undo) > 10:
+		if len(self.stack_undo) > 100:  #so that we don't use up all the ram on the computer. :-P
 			self.stack_undo.popleft()
 	
 	def paintVoxel(self, int_part_num, int_mesh_num, location, to_color):

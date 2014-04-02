@@ -215,12 +215,21 @@ class app():
 				
 			r = r + 20
 		
-		self.Colorchoise = tk.Canvas(self.root, height=50, width=50 )
+		bottom_area = tk.Frame()
+		bottom_area.grid(column=0, row=3, columnspan=4)
+		
+		# The selected colors are displayed here.
+		self.Colorchoise = tk.Canvas(bottom_area, height=50, width=50 )
 		self.Colorchoise.create_rectangle((17,17,47,47), fill="white")
-		self.Colorchoise.create_rectangle((2,2,32,32), fill="white")
+		self.Colorchoise.create_rectangle((2,2,32,32), fill="white")		
+		self.Colorchoise.grid(column=0, row=0)
 		
-		self.Colorchoise.grid(column=0, row=3)
-		
+		self.paintSize_var = tk.IntVar()
+		self.paintSize_var.set(1)
+		combo_paint_size = ttk.Combobox(bottom_area, textvariable=self.paintSize_var)
+		combo_paint_size['values'] = (1,2,3,4,5,6,7,8,9,10,12,14,16,18,20,22,24)
+		combo_paint_size.grid(column=1, row=0)
+		combo_paint_size.bind('<<ComboboxSelected>>', lambda e: print(self.paintSize_var.get()))
 		
 		self.root.mainloop()	
 	
@@ -587,19 +596,54 @@ class app():
 				self.CVRfile.paintVoxel(self.int_part_number,self.int_mesh_number,location,color)
 				self.refreshViews(location, color)
 	
-	def paint_line(self, event, view, color):
+	def paint_circle(self, x,y, view, color):
+		'''
+		https://en.wikipedia.org/wiki/Midpoint_circle_algorithm
+		:param x:
+		:param y:
+		:param view:
+		:param color:
+		'''
+		radius = self.paintSize_var.get()
+		if radius==1:
+			self.paint_pixel(x,y,view,color)
+		elif radius==2:
+			self.paint_pixel(x,y,view,color)
+			self.paint_pixel(x+1,y,view,color)
+			self.paint_pixel(x,y+1,view,color)
+			self.paint_pixel(x+1,y+1,view,color)
+		else:
+			tmpx = radius
+			tmpy = 0
+			x0 = x
+			y0 = y
+			radiusError = 1-tmpx;
+			
+			while(tmpx >= tmpy):
+				
+				self.paint_pixel(tmpx + x0, tmpy + y0,view,color)
+				self.paint_pixel(tmpy + x0, tmpx + y0,view,color)
+				self.paint_pixel(-tmpx + x0, tmpy + y0,view,color)
+				self.paint_pixel(-tmpy + x0, tmpx + y0,view,color)
+				self.paint_pixel(-tmpx + x0, -tmpy + y0,view,color)
+				self.paint_pixel(-tmpy + x0, -tmpx + y0,view,color)
+				self.paint_pixel(tmpx + x0, -tmpy + y0,view,color)
+				self.paint_pixel(tmpy + x0, -tmpx + y0,view,color)
+				tmpy=tmpy+1
+				if (radiusError<0):
+					radiusError += 2 * tmpy + 1;
+				else:
+					tmpx=tmpx-1
+					radiusError+= 2 * (tmpy - tmpx + 1)
+
+
+	def paint_line_sub(self, x0, y0, x1, y1, view, color):
 		"""
 		Bresenham's line algorithm
+		Using the formula from wikipedia
 		
 		"""
-		
-		x1 = event.x
-		y1 = event.y
-		x0 = self.previous_location[0]
-		y0 = self.previous_location[1]
-		
-		
-		
+			
 		delta_x = abs(x1-x0)
 		delta_y = abs(y1-y0) 
 		if x0 < x1:
@@ -630,7 +674,21 @@ class app():
 				y0 = y0 + sy 
 
 		self.paint_pixel(x0,y0,view,color)
-		self.previous_location = (x0, y0)
+
+	def paint_line(self, event, view, color):
+		"""
+		Bresenham's line algorithm
+		Using the formula from wikipedia
+		
+		"""
+		
+		x1 = event.x
+		y1 = event.y
+		x0 = self.previous_location[0]
+		y0 = self.previous_location[1]
+		
+		self.paint_line_sub(x0, y0, x1, y1, view, color)
+		self.previous_location = (x1, y1)
 			
 	def setleftcolor(self,e):	
 		if(len(self.filename)>0):

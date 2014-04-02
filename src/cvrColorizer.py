@@ -33,6 +33,7 @@ import os.path
 
 
 
+
 logging.basicConfig(level=logging.INFO)		
 
 class app():
@@ -56,7 +57,7 @@ class app():
 		#msg = Message(top, text=about_message)
 		#msg.pack()
 		t = tk.Text(top, width=80, height=12)
-		t.insert("1.0", "Bugs:\nSome colors are unknown.\nSome of the unknown colors aren't shown as being unknown.  Instead they appear \nblack.\n\nControls:\nClicking the middle mouse button will zoom in/out on a view.\n|<  >| will cycle through any available parts.\n< > Will cycle through any available submeshes.\nTo select a color click on it with either your right or left mouse button.\nSave As will save the file as a .cvr.  Export will save it as a text file.")
+		t.insert("1.0", "Bugs:\nSome colors are unknown.\nSome of the unknown colors aren't shown as being unknown.  Instead they appear \nblack.\nUndo is slow.\n\nControls:\nClicking the middle mouse button will zoom in/out on a view.\n|<  >| will cycle through any available parts.\n< > Will cycle through any available submeshes.\nTo select a color click on it with either your right or left mouse button.\nSave As will save the file as a .cvr.  Export will save it as a text file.")
 		t.pack()
 		button = ttk.Button(top, text="Ok", command=top.destroy)
 		button.pack()

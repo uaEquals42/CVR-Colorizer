@@ -4,14 +4,13 @@ CVR-Colorizer
 Paint tool and editor for the CVR files found in Sid's Alpha Centauri
 
 
-
-Middle mouse click zooms in and out on the views.
-
-Left click paints left color, right click paints right color and you select colors by left or right clicking on the palette.
-< >    Go through the list of submeshes (if any)
-|< >|  Go through the list of parts (if more than 1)
-Ctrl S  - Save
-Ctrl Z  - Undo
+Controls:
+* Middle mouse click zooms in and out on the views.
+* Left click paints left color, right click paints right color and you select colors by left or right clicking on the palette.
+* < >    Go through the list of submeshes (if any)
+* |< >|  Go through the list of parts (if more than 1)
+* Ctrl S  - Save
+* Ctrl Z  - Undo
 
 
 Limitations:
